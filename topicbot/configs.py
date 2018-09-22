@@ -3,10 +3,8 @@
 from configparser import ConfigParser
 
 from .exceptions import ConfigDataError
-from .decoraters import singleton
 
 
-@singleton
 class Configs:
 
     def __init__(self):
@@ -22,3 +20,4 @@ class Configs:
         """Read and parse the configs file"""
         self._parser.read(filenames, encoding=encoding)
         self._loaded = True
+        return self
