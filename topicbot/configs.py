@@ -3,8 +3,10 @@
 from configparser import ConfigParser
 
 from .exceptions import ConfigDataError
+from .decoraters import singleton
 
 
+@singleton
 class Configs:
 
     def __init__(self):

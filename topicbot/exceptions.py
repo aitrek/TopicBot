@@ -1,4 +1,4 @@
-"""Self-defined Error"""
+"""Module to handle kinds of exceptions/errors"""
 
 
 class ConfigDataError(Exception):
@@ -11,5 +11,5 @@ class ConfigDataError(Exception):
 class MsgError(Exception):
 
     def __init__(self):
-        err = "The input message key field error!"
+        err = "The user input message field error!"
         super().__init__(err)
