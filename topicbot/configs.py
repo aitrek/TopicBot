@@ -2,14 +2,8 @@
 
 from configparser import ConfigParser
 
+from .exceptions import ConfigDataError
 from .decoraters import singleton
-
-
-class ConfigDataError(Exception):
-
-    def __init__(self):
-        err = "Configs data has not been loaded!"
-        super().__init__(err)
 
 
 @singleton
