@@ -11,10 +11,15 @@ from .utils import import_module
 class Base:
 
     _attrs = []
+    _storage = None
 
     def __init__(self, id: str=None):
         self._id = id if id else str(uuid.uuid1())
-        self._storage = import_module(Configs().get("modules", "base_storage"))
+
+    def __new__(cls, *args, **kwargs):
+        if cls._storage is None:
+            cls._storage = import_module(Configs().get("base", "storage"))
+        return super().__new__(cls)
 
     def __repr__(self):
         return json.dumps(self.values)
