@@ -40,6 +40,10 @@ class Base:
     def deserialize(cls, values: dict):
         raise NotImplementedError
 
-    def _save(self):
+    def _restore(self):
+        """Restore cache data to self instance"""
+        raise NotImplementedError
+
+    def save(self):
         self._storage.add(self._id, self.values)
 
