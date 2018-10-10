@@ -40,6 +40,13 @@ class Base:
     def deserialize(cls, values: dict):
         raise NotImplementedError
 
+    def _cache(self) -> dict:
+        """Get data cached in storage"""
+        try:
+            return json.loads(self._storage.get(self._id))
+        except KeyError:
+            return {}
+
     def _restore(self):
         """Restore cache data to self instance"""
         raise NotImplementedError
