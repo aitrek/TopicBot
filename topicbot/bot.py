@@ -2,6 +2,8 @@
 
 import logging
 
+from typing import Type
+
 from .configs import Configs
 from .response import Response
 from .client import Client
@@ -14,8 +16,11 @@ from .decoraters import singleton
 class Bot:
 
     def __init__(self, config_path: str):
-        self._class_client = import_module(
-            Configs().read(config_path).get("basic", "class_client"))
+        self._class_client = self._custom_class_client(config_path)
+
+    def _custom_class_client(self, config_path: str) -> Type[Client]:
+        return import_module(
+            Configs().read(config_path).get("Bot", "class_client"))
 
     def response(self, msg: dict) -> Response:
         """Return response based on user input message.
@@ -28,4 +33,4 @@ class Bot:
         for field in ["user_id", "text"]:
             if not str(msg.get(field, "")).strip():
                 raise MsgError
-        return Client(msg).response()
+        return self._class_client(msg).response()
