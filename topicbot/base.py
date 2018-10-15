@@ -6,12 +6,17 @@ import json
 
 from .configs import Configs
 from .utils import import_module
+from .storage import Storage
+
+
+def _get_storage() -> Storage:
+    return import_module(Configs().get("Base", "storage"))()
 
 
 class Base:
 
     _attrs = []
-    _storage = import_module(Configs().get("Base", "storage"))()
+    _storage = _get_storage()
 
     def __init__(self, id: str=None):
         self._id = id if id else str(uuid.uuid1())
