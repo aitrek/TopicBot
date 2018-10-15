@@ -25,6 +25,10 @@ class Base:
         return json.dumps(self.values)
 
     @property
+    def id(self):
+        return self._id
+
+    @property
     def values(self) -> dict:
         values = dict()
         for attr in self._attrs:
