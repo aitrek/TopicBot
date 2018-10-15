@@ -33,7 +33,7 @@ class Client(Base):
 
     def __init__(self, msg: dict):
         super().__init__(msg["user_id"])
-        self._previous_topics = None
+        self._previous_topics = []
         self._current_topic = None
         self._grounding = None
         self._restore()
@@ -41,6 +41,7 @@ class Client(Base):
         self._context = self._create_context()
         self._dialog = self._create_dialog()
         self._topic = self._create_topic()
+        self._current_topic_id = self._topic.id
 
     def _create_context(self) -> dict:
         """Create context which will be helpful for later processes"""
@@ -55,9 +56,10 @@ class Client(Base):
 
     def _create_topic(self) -> Topic:
         if self._need_change_topic():
+            self._update_previous_topics(self._topic)
             return TopicFactory().create_topic(self._dialog.name)
         else:
-            return self._class_topic(self._previous_topics["topic_id"])
+            return self._class_topic(self._previous_topics[-1]["name"])
 
     def _need_change_topic(self) -> bool:
         """Check if need to change to a new topic
@@ -89,3 +91,7 @@ class Client(Base):
             self._previous_topics = cache.get("_previous_topics", [])
             self._current_topic = self._create_topic()
             self._grounding = cache.get("_grounding", {})
+
+    def _update_previous_topics(self, topic: Topic):
+        if self._topic is not None:
+            self._previous_topics.append(topic.status())
