@@ -56,6 +56,11 @@ class Base:
         except KeyError:
             return {}
 
+    @classmethod
+    def get_cache_by_id(cls, id: str):
+        """Get data from storage. Raise KeyError if no data found."""
+        return json.loads(cls._storage.get(id))
+
     def _restore(self):
         """Restore cache data to self instance"""
         raise NotImplementedError
