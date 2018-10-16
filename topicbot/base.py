@@ -67,7 +67,13 @@ class Base:
 
     def _restore(self):
         """Restore cache data to self instance"""
-        raise NotImplementedError
+        cache = self._cache()
+        if cache:
+            for attr in self._attrs:
+                try:
+                    setattr(self, attr, cache[attr])
+                except Exception:
+                    continue
 
     def save(self):
         self._storage.add(self._id, self.values)
