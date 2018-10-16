@@ -3,6 +3,7 @@
 import logging
 
 from typing import Type
+from collections import OrderedDict
 
 from .base import Base
 from .dialog import Dialog
@@ -26,6 +27,7 @@ class Client(Base):
         "_id",                  # Client instance id
         "_previous_topics",     # Topic status list of previous Topic instances
         "_current_topic_id",    # Current Topic instance
+        "_context",             # Context of the conversation
         "_grounding"            # The conversation grounding
     ]
     _class_dialog = _custom_class_dialog()
@@ -33,13 +35,16 @@ class Client(Base):
 
     def __init__(self, msg: dict):
         super().__init__(msg["user_id"])
-        self._previous_topics = []
+        self._previous_topics = OrderedDict()
         self._grounding = {}
         self._restore()
         self._msg = msg
         self._context = self._create_context()
         self._dialog = self._create_dialog()
         self._topic = self._create_topic()
+
+    def __del__(self):
+        self._update_previous_topics()
 
     def _create_context(self) -> dict:
         """Create context which will be helpful for later processes"""
@@ -53,18 +58,15 @@ class Client(Base):
         return self._class_dialog(self._msg, self._context, self._grounding)
 
     def _create_topic(self) -> Topic:
-        change_code = self._need_change_topic()
-        if change_code == 0:    # no need to update previous_topics
-            return TopicFactory().create_topic(self._dialog.name)
-        elif change_code == 1:
-            self._update_previous_topics(self._topic)
+        if self._need_change_topic():
             return TopicFactory().create_topic(self._dialog.name)
         else:
-            topic_name = self._previous_topics[-1]["name"]
-            topic_id = self._previous_topics[-1]["id"]
+            last_topic = self._previous_topics.popitem()
+            topic_id = last_topic[0]
+            topic_name = last_topic[1]["name"]
             return TopicFactory().create_topic(topic_name, topic_id)
 
-    def _need_change_topic(self) -> int:
+    def _need_change_topic(self) -> bool:
         """Check if need to change to a new topic
 
         Processing logic:
@@ -72,21 +74,19 @@ class Client(Base):
         2. True if the dialog domain changes.
         3. True if the dialog remains unchanged but intent changes.
         4. Otherwise False.
-
-        :return:
-            0 - case logic#1
-            1 - case logic#2&3
-            2 - case logic#4
         """
-        # logic 1
+        def last_topic_name(previous_topics: OrderedDict) -> str:
+            if not previous_topics:
+                return ""
+            last_id = list(previous_topics.keys())[-1]
+            return previous_topics[last_id]["name"]
+
         if self._topic is None:
-            return 0
-        # logic 2&3
-        elif self._dialog.name != self._topic.name:
-            return 1
-        # logic 4
+            return True
+        elif self._dialog.name != last_topic_name(self._previous_topics):
+            return True
         else:
-            return 2
+            return False
 
     def _respond(self) -> dict:
         """Respond to user according to msg, context and grounding."""
@@ -107,6 +107,6 @@ class Client(Base):
             self._previous_topics = cache.get("_previous_topics", [])
             self._grounding = cache.get("_grounding", {})
 
-    def _update_previous_topics(self, topic: Topic):
+    def _update_previous_topics(self):
         if self._topic is not None:
-            self._previous_topics.append(topic.status())
+            self._previous_topics[self._topic.id] = self._topic.status()
