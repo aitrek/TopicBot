@@ -19,13 +19,17 @@ class Base:
     _storage = _get_storage()
 
     def __init__(self, id: str=None):
-        self._id = id if id else str(uuid.uuid1())
+        if id is None:
+            self._id = str(uuid.uuid1())
+        else:
+            self._id = id
+            self._restore()
 
     def __repr__(self):
         return json.dumps(self.values)
 
     @property
-    def id(self):
+    def id(self) -> str:
         return self._id
 
     @property
