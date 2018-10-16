@@ -93,7 +93,11 @@ class Client(Base):
         return self._topic.respond(self._dialog, self._context, self._grounding)
 
     def respond(self) -> Response:
-        """Convert returned dict from self._respond() to Response instance"""
+        """Convert returned dict from self._respond() to Response instance.
+
+        Notice:
+            The final response should be assign to dialog.response before return.
+        """
         raise NotImplementedError
 
     def _restore(self):
