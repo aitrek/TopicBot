@@ -2,13 +2,13 @@
 
 import logging
 
-from typing import Type
+from typing import Type, List
 from collections import OrderedDict
 
 from .base import Base
 from .dialog import Dialog
 from .topic import Topic, TopicFactory
-from .response import Response
+from .response import Response, ResponseFactory
 from .configs import Configs
 from .utils import import_module
 
@@ -88,17 +88,17 @@ class Client(Base):
         else:
             return False
 
-    def _respond(self) -> dict:
+    def respond(self) -> List[Response]:
         """Respond to user according to msg, context and grounding."""
-        return self._topic.respond(self._dialog, self._context, self._grounding)
+        responses = self._topic.respond(self._dialog, self._context, self._grounding)
+        results = []
+        if isinstance(responses, dict):
+            results.append(ResponseFactory().create_response(responses))
+        elif isinstance(responses, (tuple, list)):
+            for res in responses:
+                results.append(ResponseFactory().create_response(res))
 
-    def respond(self) -> Response:
-        """Convert returned dict from self._respond() to Response instance.
-
-        Notice:
-            The final response should be assign to dialog.response before return.
-        """
-        raise NotImplementedError
+        return results
 
     def _restore(self):
         """Restore the historical information to self"""

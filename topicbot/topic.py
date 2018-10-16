@@ -12,6 +12,7 @@ from typing import Dict, Type, List
 from .decoraters import singleton
 from .configs import Configs
 from .dialog import Dialog
+from .response import Response
 
 
 class Topic:
@@ -71,13 +72,13 @@ class Topic:
     def name(self) -> str:
         return self._name()
 
-    def _respond_param_missing(self) -> dict:
+    def _respond_param_missing(self) -> Response:
         """Respond if some param miss. If no param miss,
         just return empty dict."""
         # todo
         return {}
 
-    def respond(self, dialog: Dialog, context: dict, grounding: dict) -> dict:
+    def respond(self, dialog: Dialog, context: dict, grounding: dict) -> Response:
         """Respond to user input"""
         self.dialog = dialog
         self.conext = context
@@ -128,7 +129,6 @@ class TopicFactory:
                             topic_name = memb._name()
                             topics[topic_name] = memb
                         except NotImplementedError:
-                            # 如果topic_name还没有实现，就认为是import进来的抽象类
                             continue
 
         return topics
