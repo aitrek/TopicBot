@@ -34,14 +34,12 @@ class Client(Base):
     def __init__(self, msg: dict):
         super().__init__(msg["user_id"])
         self._previous_topics = []
-        self._current_topic = None
-        self._grounding = None
+        self._grounding = {}
         self._restore()
         self._msg = msg
         self._context = self._create_context()
         self._dialog = self._create_dialog()
         self._topic = self._create_topic()
-        self._current_topic_id = self._topic.id
 
     def _create_context(self) -> dict:
         """Create context which will be helpful for later processes"""
@@ -55,13 +53,18 @@ class Client(Base):
         return self._class_dialog(self._msg, self._context, self._grounding)
 
     def _create_topic(self) -> Topic:
-        if self._need_change_topic():
+        change_code = self._need_change_topic()
+        if change_code == 0:    # no need to update previous_topics
+            return TopicFactory().create_topic(self._dialog.name)
+        elif change_code == 1:
             self._update_previous_topics(self._topic)
             return TopicFactory().create_topic(self._dialog.name)
         else:
-            return self._class_topic(self._previous_topics[-1]["name"])
+            topic_name = self._previous_topics[-1]["name"]
+            topic_id = self._previous_topics[-1]["id"]
+            return TopicFactory().create_topic(topic_name, topic_id)
 
-    def _need_change_topic(self) -> bool:
+    def _need_change_topic(self) -> int:
         """Check if need to change to a new topic
 
         Processing logic:
@@ -69,27 +72,35 @@ class Client(Base):
         2. True if the dialog domain changes.
         3. True if the dialog remains unchanged but intent changes.
         4. Otherwise False.
+
+        :return:
+            0 - case logic#1
+            1 - case logic#2&3
+            2 - case logic#4
         """
         # logic 1
-        if self._current_topic is None:
-            return True
+        if self._topic is None:
+            return 0
         # logic 2&3
         elif self._dialog.name != self._topic.name:
-            return True
+            return 1
         # logic 4
         else:
-            return False
+            return 2
+
+    def _respond(self) -> dict:
+        """Respond to user according to msg, context and grounding."""
+        return self._topic.respond(self._dialog, self._context, self._grounding)
 
     def respond(self) -> Response:
-        """Respond to user according to msg, context and grounding"""
-        return self._current_topic.respond()
+        """Convert returned dict from self._respond() to Response instance"""
+        raise NotImplementedError
 
     def _restore(self):
         """Restore the historical information to self"""
         cache = self._cache()
         if cache:
             self._previous_topics = cache.get("_previous_topics", [])
-            self._current_topic = self._create_topic()
             self._grounding = cache.get("_grounding", {})
 
     def _update_previous_topics(self, topic: Topic):
