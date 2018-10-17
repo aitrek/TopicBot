@@ -2,7 +2,7 @@
 
 import logging
 
-from typing import Type
+from typing import Type, List
 
 from .configs import Configs
 from .response import Response
@@ -23,7 +23,7 @@ class Bot:
     def __init__(self, config_path: str):
         self._class_client = _custom_class_client(config_path)
 
-    def response(self, msg: dict) -> Response:
+    def respond(self, msg: dict) -> List[Response]:
         """Return response based on user input message.
 
         :param msg: dict, user input message which should contain:

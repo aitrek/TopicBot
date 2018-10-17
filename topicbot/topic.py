@@ -73,10 +73,8 @@ class Topic:
         return self._name()
 
     def _respond_param_missing(self) -> Response:
-        """Respond if some param miss. If no param miss,
-        just return empty dict."""
-        # todo
-        return {}
+        """Respond if some param miss. If no param miss, just return empty dict."""
+        raise NotImplementedError
 
     def respond(self, dialog: Dialog, context: dict, grounding: dict) -> Response:
         """Respond to user input"""
