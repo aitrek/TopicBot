@@ -11,6 +11,8 @@ from .topic import Topic, TopicFactory
 from .response import Response, ResponseFactory
 from .configs import Configs
 from .utils import import_module
+from .grounding import Grounding
+from .context import Context
 
 
 def _custom_class_dialog() -> Type[Dialog]:
@@ -24,24 +26,50 @@ def _custom_class_topic() -> Type[Topic]:
 class Client(Base):
 
     _attrs = [
-        "_id",                  # Client instance id
-        "_previous_topics",     # Topic status list of previous Topic instances
-        "_current_topic_id",    # Current Topic instance
-        "_context",             # Context of the conversation
-        "_grounding"            # The conversation grounding
+        "id",                  # Client instance id
+        "previous_topics",     # Topic status list of previous Topic instances
+        "context",             # Context of the conversation
+        "grounding"            # The conversation grounding
     ]
     _class_dialog = _custom_class_dialog()
     _class_topic = _custom_class_topic()
 
     def __init__(self, msg: dict):
         super().__init__(msg["user_id"])
-        self._previous_topics = OrderedDict()
-        self._grounding = {}
+        self._previous_topics = None
+        self._grounding = None
+        self._context = None
         self._restore()
-        self._msg = msg
-        self._context = self._create_context()
-        self._dialog = self._create_dialog()
+        self._dialog = self._create_dialog(msg)
+        self._context.update(self._dialog)
         self._topic = self._create_topic()
+
+    @property
+    def previous_topics(self):
+        return self._previous_topics
+
+    @previous_topics.setter
+    def previous_topics(self, items: list):
+        """
+        :param items: listified OrderdDict items
+        """
+        self._previous_topics = OrderedDict(items)
+
+    @property
+    def context(self):
+        return self._context
+
+    @context.setter
+    def context(self, context_values: dict):
+        self._context = Context(context_values)
+
+    @property
+    def grounding(self):
+        return self._grounding
+
+    @grounding.setter
+    def grounding(self, grounding_values: dict):
+        self._grounding = Grounding(grounding_values)
 
     def __del__(self):
         self._update_previous_topics()
@@ -50,20 +78,16 @@ class Client(Base):
         """Create context which will be helpful for later processes"""
         raise NotImplementedError
 
-    def _update_grounding(self):
-        """Update grounding when change topics"""
-        raise NotImplementedError
-
-    def _create_dialog(self) -> Dialog:
+    def _create_dialog(self, msg: dict) -> Dialog:
         """Create Dialog instance for this round of conversation
 
         The grounding will be update in Dialog instance if necessary.
         """
-        return self._class_dialog(self._msg, self._context, self._grounding)
+        return self._class_dialog(msg, self._context, self._grounding)
 
     def _create_topic(self) -> Topic:
         if self._need_change_topic():
-            self._update_grounding()
+            self._grounding.update(self._context)
             return TopicFactory().create_topic(self._dialog.name)
         else:
             last_topic = self._previous_topics.popitem()
@@ -106,11 +130,16 @@ class Client(Base):
         return results
 
     def _restore(self):
-        """Restore the historical information to self"""
+        """Restore the historical information to self."""
         cache = self._cache()
         if cache:
-            self._previous_topics = cache.get("_previous_topics", [])
-            self._grounding = cache.get("_grounding", {})
+            self._previous_topics = OrderedDict(cache.get("previous_topics", []))
+            self._grounding = Grounding(cache.get("grounding", {}))
+            self._context = Context(cache.get("context", {}))
+        else:
+            self._previous_topics = OrderedDict()
+            self._grounding = Grounding()
+            self._context = Context()
 
     def _update_previous_topics(self):
         if self._topic is not None:

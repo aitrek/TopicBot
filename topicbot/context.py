@@ -2,17 +2,17 @@
 
 import json
 
+from .dialog import Dialog
+
 
 class Context:
 
-    def __init__(self, msg: dict):
-        self._user_id = str(msg["user_id"]).strip()
-        self._text = msg["text"].strip()
-        self._context_data = self._create_context(msg)
+    def __init__(self, data: dict=None):
+        self._data = data if data else {}
 
     @property
     def values(self) -> dict:
-        return self.__dict__
+        return self._data
 
     def __repr__(self) -> str:
         return json.dumps(self.values)
@@ -22,4 +22,8 @@ class Context:
 
     def to_features(self) -> dict:
         """Extract extended features from the context data"""
+        raise NotImplementedError
+
+    def update(self, dialog: Dialog):
+        """Update context with the Dialog instance of this round of conversation"""
         raise NotImplementedError
