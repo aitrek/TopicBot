@@ -88,12 +88,18 @@ class Client(Base):
     def _create_topic(self) -> Topic:
         if self._need_change_topic():
             self._grounding.update(self._context)
-            return TopicFactory().create_topic(self._dialog.name)
+            topic = TopicFactory().create_topic(self._dialog.name)
         else:
             last_topic = self._previous_topics.popitem()
             topic_id = last_topic[0]
             topic_name = last_topic[1]["name"]
-            return TopicFactory().create_topic(topic_name, topic_id)
+            topic = TopicFactory().create_topic(topic_name, topic_id)
+
+        topic.dialog = self._dialog
+        topic.context = self._context
+        topic.grounding = self._grounding
+
+        return topic
 
     def _need_change_topic(self) -> bool:
         """Check if need to change to a new topic
@@ -119,7 +125,7 @@ class Client(Base):
 
     def respond(self) -> List[Response]:
         """Respond to user according to msg, context and grounding."""
-        responses = self._topic.respond(self._dialog, self._context, self._grounding)
+        responses = self._topic.respond()
         results = []
         if isinstance(responses, dict):
             results.append(ResponseFactory().create_response(responses))
