@@ -50,6 +50,10 @@ class Client(Base):
         """Create context which will be helpful for later processes"""
         raise NotImplementedError
 
+    def _update_grounding(self):
+        """Update grounding when change topics"""
+        raise NotImplementedError
+
     def _create_dialog(self) -> Dialog:
         """Create Dialog instance for this round of conversation
 
@@ -59,6 +63,7 @@ class Client(Base):
 
     def _create_topic(self) -> Topic:
         if self._need_change_topic():
+            self._update_grounding()
             return TopicFactory().create_topic(self._dialog.name)
         else:
             last_topic = self._previous_topics.popitem()
