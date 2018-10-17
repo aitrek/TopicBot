@@ -13,19 +13,45 @@ from .decoraters import singleton
 from .configs import Configs
 from .dialog import Dialog
 from .response import Response
+from .context import Context
+from .grounding import Grounding
 
 
 class Topic:
 
     def __init__(self, id: str=None):
         self._id = id if id else str(uuid.uuid1())
-        self.dialog = None
-        self.conext = {}
-        self.grounding = {}
+        self._dialog = None
+        self._context = None
+        self._grounding = None
 
     @property
     def id(self):
         return self._id
+
+    @property
+    def dialog(self) -> Dialog:
+        return self._dialog
+
+    @dialog.setter
+    def dialog(self, dialog: Dialog):
+        self._dialog = dialog
+
+    @property
+    def context(self):
+        return self._context
+
+    @context.setter
+    def context(self, context: Context):
+        self._conext = context
+
+    @property
+    def grounding(self):
+        return self._grounding
+
+    @grounding.setter
+    def grounding(self, grounding: Grounding):
+        self._grounding = grounding
 
     @classmethod
     def domain(cls) -> str:
@@ -76,18 +102,14 @@ class Topic:
         """Respond if some param miss. If no param miss, just return empty dict."""
         raise NotImplementedError
 
-    def respond(self, dialog: Dialog, context: dict, grounding: dict) -> Response:
+    def respond(self) -> Response:
         """Respond to user input"""
-        self.dialog = dialog
-        self.conext = context
-        self.grounding = grounding
-
         # check params
         res_param_missing = self._respond_param_missing()
         if res_param_missing:
             return res_param_missing
 
-        method_name = self.case_maps()[self.case(dialog.cases)]["method"]
+        method_name = self.case_maps()[self.case(self.dialog.cases)]["method"]
         return getattr(self, method_name)()
 
     def status(self):
