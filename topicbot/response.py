@@ -29,7 +29,7 @@ class ResponseFactory:
 
     def _load_responses(self):
         responses = {}
-        path = Configs.get("Responses", "response_path")
+        path = Configs().get("Responses", "response_path")
         if os.path.isdir(path):
             for f in os.listdir(path):
 
