@@ -32,6 +32,10 @@ class Base:
     def id(self) -> str:
         return self._id
 
+    @id.setter
+    def id(self, id: str):
+        self._id = id
+
     @property
     def values(self) -> dict:
         values = dict()
