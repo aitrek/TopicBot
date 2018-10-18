@@ -135,18 +135,6 @@ class Client(Base):
 
         return results
 
-    def _restore(self):
-        """Restore the historical information to self."""
-        cache = self._cache()
-        if cache:
-            self._previous_topics = OrderedDict(cache.get("previous_topics", []))
-            self._grounding = Grounding(cache.get("grounding", {}))
-            self._context = Context(cache.get("context", {}))
-        else:
-            self._previous_topics = OrderedDict()
-            self._grounding = Grounding()
-            self._context = Context()
-
     def _update_previous_topics(self):
         if self._topic is not None:
             self._previous_topics[self._topic.id] = self._topic.status()
