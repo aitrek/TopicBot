@@ -18,7 +18,12 @@ class Dialog(Base):
         "_response"         # instance, final response to user
     ]
 
-    def __init__(self, msg: dict, context: dict, grounding: dict):
+    def __init__(self, msg: dict, context, grounding):
+        """
+        :param msg:
+        :param context: Context instance, no param type hint for loop calling
+        :param grounding: Grounding instance, no param type hint for loop calling
+        """
         super().__init__()
         self._msg = msg
         self._context = context

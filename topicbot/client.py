@@ -19,8 +19,12 @@ def _custom_class_dialog() -> Type[Dialog]:
     return import_module(Configs().get("Client", "class_dialog"))
 
 
-def _custom_class_topic() -> Type[Topic]:
-    return import_module(Configs().get("Client", "class_topic"))
+def _custom_class_context() -> Type[Context]:
+    return import_module(Configs().get("Client", "class_context"))
+
+
+def _custom_class_grounding() -> Type[Grounding]:
+    return import_module(Configs().get("Client", "class_grounding"))
 
 
 class Client(Base):
@@ -32,17 +36,20 @@ class Client(Base):
         "grounding"            # The conversation grounding
     ]
     _class_dialog = _custom_class_dialog()
-    _class_topic = _custom_class_topic()
+    _class_context = _custom_class_context()
+    _class_grounding = _custom_class_grounding()
 
     def __init__(self, msg: dict):
         super().__init__(msg["user_id"])
         self._previous_topics = None
         self._grounding = None
         self._context = None
+        self._topic = None
         self._restore()
-        self._dialog = self._create_dialog(msg)
-        self._context.update(self._dialog)
-        self._topic = self._create_topic()
+        self._update(msg)
+
+    def __del__(self):
+        self._update_previous_topics()
 
     @property
     def previous_topics(self):
@@ -61,7 +68,7 @@ class Client(Base):
 
     @context.setter
     def context(self, context_values: dict):
-        self._context = Context(context_values)
+        self._context = self._class_context(context_values)
 
     @property
     def grounding(self):
@@ -69,21 +76,7 @@ class Client(Base):
 
     @grounding.setter
     def grounding(self, grounding_values: dict):
-        self._grounding = Grounding(grounding_values)
-
-    def __del__(self):
-        self._update_previous_topics()
-
-    def _create_context(self) -> dict:
-        """Create context which will be helpful for later processes"""
-        raise NotImplementedError
-
-    def _create_dialog(self, msg: dict) -> Dialog:
-        """Create Dialog instance for this round of conversation
-
-        The grounding will be update in Dialog instance if necessary.
-        """
-        return self._class_dialog(msg, self._context, self._grounding)
+        self._grounding = self._class_grounding(grounding_values)
 
     def _create_topic(self) -> Topic:
         if self._need_change_topic():
@@ -138,3 +131,12 @@ class Client(Base):
     def _update_previous_topics(self):
         if self._topic is not None:
             self._previous_topics[self._topic.id] = self._topic.status()
+
+    def _update(self, msg: dict):
+        """
+        Update client data(dialog, context, grounding, previous_topics)
+        with input message from user.
+        """
+        self._dialog = self._class_dialog(msg, self.context, self.grounding)
+        self._context.update(self._dialog)
+        self._topic = self._create_topic()
