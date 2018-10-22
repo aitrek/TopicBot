@@ -46,6 +46,7 @@ class Client(Base):
         self._context = None
         self._topic = None
         self._restore()
+        self._dialog = None
         self._update(msg)
 
     def __del__(self):
@@ -67,7 +68,7 @@ class Client(Base):
         return self._context
 
     @context.setter
-    def context(self, context_values: dict):
+    def context(self, context_values: dict=None):
         self._context = self._class_context(context_values)
 
     @property
@@ -81,16 +82,13 @@ class Client(Base):
     def _create_topic(self) -> Topic:
         if self._need_change_topic():
             self._grounding.update(self._context)
+            self._context = self._class_context()   # an empty context
             topic = TopicFactory().create_topic(self._dialog.name)
         else:
             last_topic = self._previous_topics.popitem()
             topic_id = last_topic[0]
             topic_name = last_topic[1]["name"]
             topic = TopicFactory().create_topic(topic_name, topic_id)
-
-        topic.dialog = self._dialog
-        topic.context = self._context
-        topic.grounding = self._grounding
 
         return topic
 
@@ -118,7 +116,7 @@ class Client(Base):
 
     def respond(self) -> List[Response]:
         """Respond to user according to msg, context and grounding."""
-        responses = self._topic.respond()
+        responses = self._topic.respond() if self._dialog else []
         results = []
         if isinstance(responses, dict):
             results.append(ResponseFactory().create_response(responses))
@@ -138,5 +136,5 @@ class Client(Base):
         with input message from user.
         """
         self._dialog = self._class_dialog(msg, self.context, self.grounding)
-        self._context.update(self._dialog)
         self._topic = self._create_topic()
+        self._context.update(self._dialog)

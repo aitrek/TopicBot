@@ -7,14 +7,12 @@ import inspect
 import importlib.util
 
 from inspect import isclass
-from typing import Dict, Type, List
+from typing import Dict, Type, List, AnyType
 
 from .decoraters import singleton
 from .configs import Configs
 from .dialog import Dialog
 from .response import Response
-from .context import Context
-from .grounding import Grounding
 
 
 class Topic:
@@ -22,8 +20,6 @@ class Topic:
     def __init__(self, id: str=None):
         self._id = id if id else str(uuid.uuid1())
         self._dialog = None
-        self._context = None
-        self._grounding = None
 
     @property
     def id(self):
@@ -32,26 +28,6 @@ class Topic:
     @property
     def dialog(self) -> Dialog:
         return self._dialog
-
-    @dialog.setter
-    def dialog(self, dialog: Dialog):
-        self._dialog = dialog
-
-    @property
-    def context(self):
-        return self._context
-
-    @context.setter
-    def context(self, context: Context):
-        self._conext = context
-
-    @property
-    def grounding(self):
-        return self._grounding
-
-    @grounding.setter
-    def grounding(self, grounding: Grounding):
-        self._grounding = grounding
 
     @classmethod
     def domain(cls) -> str:
@@ -64,6 +40,11 @@ class Topic:
     def case(self, dialog_cases: List[str]) -> str:
         """Calculate topic case with dialog cases."""
         raise NotImplementedError
+
+    def get(self, key: str):
+        """Get the most possible value from self._dialog.
+        If no data found, None will be returned."""
+        return self._dialog[key]
 
     def case_maps(self) -> Dict[str, dict]:
         """Maps from case to intent method.
@@ -99,11 +80,12 @@ class Topic:
         return self._name()
 
     def _respond_param_missing(self) -> Response:
-        """Respond if some param miss. If no param miss, just return empty dict."""
+        """Return Response instance if some param miss, or None if no param missing."""
         raise NotImplementedError
 
-    def respond(self) -> Response:
+    def respond(self, dialog: Dialog) -> Response:
         """Respond to user input"""
+        self._dialog = dialog
         # check params
         res_param_missing = self._respond_param_missing()
         if res_param_missing:
