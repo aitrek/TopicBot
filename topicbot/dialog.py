@@ -105,7 +105,7 @@ class Dialog(Base):
         """
         return " ".join([ent["value"] for ent in entities])
 
-    def _standardize_text(self, entities: List[dict]) -> str:
+    def _standardize_text(self, text: str) -> str:
         """Create standardized text"""
         raise NotImplementedError
 
