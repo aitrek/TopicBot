@@ -17,9 +17,6 @@ class Context:
     def __repr__(self) -> str:
         return json.dumps(self.values)
 
-    def _create_context(self, msg: dict):
-        raise NotImplementedError
-
     def to_features(self) -> dict:
         """Extract extended features from the context data"""
         raise NotImplementedError
