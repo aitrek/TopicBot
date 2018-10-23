@@ -1,6 +1,7 @@
 """The conversation client according instanced according different users"""
 
 import logging
+import time
 
 from typing import Type, List
 from collections import OrderedDict
@@ -125,6 +126,14 @@ class Client(Base):
                 results.append(ResponseFactory().create_response(res))
 
         return results
+
+    def status(self) -> dict:
+        """Status of this Client instance"""
+        # todo add other status
+        return {
+            "user_id": self.id,
+            "timestamp": time.time()
+        }
 
     def _update_previous_topics(self):
         if self._topic is not None:
