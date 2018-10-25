@@ -117,13 +117,22 @@ class Client(Base):
 
     def respond(self) -> List[Response]:
         """Respond to user according to msg, context and grounding."""
-        responses = self._topic.respond() if self._dialog else []
         results = []
+        response_msg = self._dialog.response_msg
+        responses = self._topic.respond()
+
         if isinstance(responses, dict):
-            results.append(ResponseFactory().create_response(responses))
+            results.append(
+                ResponseFactory().create_response(responses, response_msg)
+            )
         elif isinstance(responses, (tuple, list)):
             for res in responses:
-                results.append(ResponseFactory().create_response(res))
+                results.append(
+                    ResponseFactory().create_response(res, response_msg)
+                )
+        else:
+            # todo logging
+            pass
 
         return results
 

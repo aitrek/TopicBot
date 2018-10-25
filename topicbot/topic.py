@@ -7,12 +7,11 @@ import inspect
 import importlib.util
 
 from inspect import isclass
-from typing import Dict, Type, List, AnyType
+from typing import Dict, Type, List, Tuple, Union
 
 from .decoraters import singleton
 from .configs import Configs
 from .dialog import Dialog
-from .response import Response, ResponseFactory
 
 
 class Topic:
@@ -79,22 +78,22 @@ class Topic:
     def name(self) -> str:
         return self._name()
 
-    def _respond_param_missing(self) -> Response:
+    def _respond_param_missing(self) -> Union[dict, List[dict], Tuple[dict]]:
         """Return Response instance if some param miss, or None if no param missing."""
         raise NotImplementedError
 
-    def respond(self, dialog: Dialog) -> Response:
+    def respond(self, dialog: Dialog) -> Union[dict, List[dict], Tuple[dict]]:
         """Respond to user input"""
         self._dialog = dialog
         # check params
         res_param_missing = self._respond_param_missing()
         if res_param_missing:
-            response = res_param_missing
+            responses = res_param_missing
         else:
             method_name = self.case_maps()[self.case(self.dialog.cases)]["method"]
-            response = getattr(self, method_name)()
+            responses = getattr(self, method_name)()
 
-        return ResponseFactory().create_response(response, dialog.response_msg)
+        return responses
 
     def status(self):
         # todo add other status

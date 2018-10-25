@@ -95,9 +95,9 @@ class Dialog(Base):
         """
         :param response_data: Serialized data of a Response instance.
         """
-        response_data = response_data["response_data"]
-        msg = response_data["msg"]
-        self._response = ResponseFactory().create_response(response_data, msg)
+        additional_msg = response_data["additional_msg"]
+        self._response = ResponseFactory().create_response(response_data,
+                                                           additional_msg)
 
     @property
     def response_msg(self) -> dict:

@@ -13,26 +13,26 @@ from .decoraters import singleton
 
 class Response:
 
-    protocol = 0
+    protocol = 0    # need to reset a new value in sub-class
 
-    def __init__(self, response_data: dict, msg: dict):
+    def __init__(self, response_data: dict, additional_msg: dict):
         """
         :param response_data: Response data from topic, which include the final
             reply to user.
-        :param msg: The original message from user, offering additional
+        :param additional_msg: The original message from user, offering additional
             information, such as platform, version, etc.
         """
-        self._data = response_data
-        self._msg = msg
+        self._output = response_data.get("output", {})
+        self._raw_data = response_data.get("raw_data", {})
+        self._additional_msg = additional_msg
 
     def __repr__(self):
         return json.dumps(
             {
-                "response_data": {
-                    "protocol": self.protocol,
-                    "data": self._data
-                },
-                "msg": self._msg
+                "protocol": self.protocol,
+                "output": self._output,
+                "raw_data": self._raw_data,
+                "additional_msg": self._additional_msg
             }
         )
 
@@ -74,7 +74,7 @@ class ResponseFactory:
                             continue
         return responses
 
-    def create_response(self, response_data: dict, response_msg: dict) -> Response:
+    def create_response(self, response_data: dict, additional_msg: dict) -> Response:
         """Create Response instance according to response data and response msg.
 
         :param response_data: Response data from topic respond method. It should
@@ -82,12 +82,12 @@ class ResponseFactory:
             The structure:
             {
                 "protocol": int,
-                "data": dict
+                "output": dict,
+                "raw_data": dict
             }
-        :param response_msg: Message from dialog including original message
+        :param additional_msg: Message from dialog including original message
             from user input and some information of dialog.
         :return: Response instance
         """
         protocol = response_data["protocol"]
-        data = response_data["data"]
-        return self._responses[protocol](data, response_msg)
+        return self._responses[protocol](response_data, additional_msg)
