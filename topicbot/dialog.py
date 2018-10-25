@@ -59,7 +59,7 @@ class Dialog(Base):
             return grounding_value
 
     @property
-    def msg(self):
+    def msg(self) -> dict:
         return self._msg
 
     @msg.setter
@@ -67,7 +67,7 @@ class Dialog(Base):
         self._msg = msg
 
     @property
-    def parsed_data(self):
+    def parsed_data(self) -> dict:
         return self._parsed_data
 
     @parsed_data.setter
@@ -75,15 +75,15 @@ class Dialog(Base):
         self._parsed_data = parsed_data
 
     @property
-    def domain(self):
+    def domain(self) -> str:
         return self._parsed_data.get("domain", "")
 
     @property
-    def intent(self):
+    def intent(self) -> str:
         return self._parsed_data.get("intent", "")
 
     @property
-    def cases(self):
+    def cases(self) -> List[str]:
         return self._parsed_data.get("cases", [])
 
     @property

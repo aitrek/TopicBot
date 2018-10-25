@@ -14,8 +14,15 @@ class Response:
 
     protocol = 0
 
-    def __init__(self, data: dict):
-        self._data = data
+    def __init__(self, response_data: dict, msg: dict):
+        """
+        :param response_data: Response data from topic, which include the final
+            reply to user.
+        :param msg: The original message from user, offerring additional
+            information, such as platform, version, etc.
+        """
+        self._data = response_data
+        self._msg = msg
 
     def values(self) -> dict:
         raise NotImplementedError
@@ -48,10 +55,9 @@ class ResponseFactory:
                             responses[memb.protocol] = memb
                         except NotImplementedError:
                             continue
-
         return responses
 
-    def create_response(self, response: dict) -> Response:
+    def create_response(self, response: dict, msg: dict) -> Response:
         """Create Response instance according to response data.
 
         :param response: Response data from topic respond method. It should
@@ -61,10 +67,11 @@ class ResponseFactory:
                 "protocol": int,
                 "data": dict
             }
+        :param msg: The original message from user input.
         :return: Response instance
         """
         protocol = response["protocol"]
         data = response["data"]
-        return self._responses[protocol](data)
+        return self._responses[protocol](data, msg)
 
 

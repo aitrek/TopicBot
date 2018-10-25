@@ -12,7 +12,7 @@ from typing import Dict, Type, List, AnyType
 from .decoraters import singleton
 from .configs import Configs
 from .dialog import Dialog
-from .response import Response
+from .response import Response, ResponseFactory
 
 
 class Topic:
@@ -89,10 +89,12 @@ class Topic:
         # check params
         res_param_missing = self._respond_param_missing()
         if res_param_missing:
-            return res_param_missing
+            response = res_param_missing
+        else:
+            method_name = self.case_maps()[self.case(self.dialog.cases)]["method"]
+            response = getattr(self, method_name)()
 
-        method_name = self.case_maps()[self.case(self.dialog.cases)]["method"]
-        return getattr(self, method_name)()
+        return ResponseFactory().create_response(response, dialog.msg)
 
     def status(self):
         # todo add other status
