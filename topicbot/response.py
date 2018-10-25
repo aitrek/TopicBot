@@ -1,6 +1,7 @@
 """Class to handle the output"""
 
 import os
+import json
 import inspect
 import importlib.util
 
@@ -18,11 +19,27 @@ class Response:
         """
         :param response_data: Response data from topic, which include the final
             reply to user.
-        :param msg: The original message from user, offerring additional
+        :param msg: The original message from user, offering additional
             information, such as platform, version, etc.
         """
         self._data = response_data
         self._msg = msg
+
+    def __repr__(self):
+        return json.dumps(
+            {
+                "response_data": {
+                    "protocol": self.protocol,
+                    "data": self._data
+                },
+                "msg": self._msg
+            }
+        )
+
+    def template(self) -> dict:
+        """A empty response values to be filled with real data
+        to create a response values."""
+        raise NotImplementedError
 
     def values(self) -> dict:
         raise NotImplementedError
@@ -57,21 +74,20 @@ class ResponseFactory:
                             continue
         return responses
 
-    def create_response(self, response: dict, msg: dict) -> Response:
-        """Create Response instance according to response data.
+    def create_response(self, response_data: dict, response_msg: dict) -> Response:
+        """Create Response instance according to response data and response msg.
 
-        :param response: Response data from topic respond method. It should
+        :param response_data: Response data from topic respond method. It should
             have to have keys 'protocal' and 'data'.
             The structure:
             {
                 "protocol": int,
                 "data": dict
             }
-        :param msg: The original message from user input.
+        :param response_msg: Message from dialog including original message
+            from user input and some information of dialog.
         :return: Response instance
         """
-        protocol = response["protocol"]
-        data = response["data"]
-        return self._responses[protocol](data, msg)
-
-
+        protocol = response_data["protocol"]
+        data = response_data["data"]
+        return self._responses[protocol](data, response_msg)

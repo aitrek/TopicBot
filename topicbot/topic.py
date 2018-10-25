@@ -94,7 +94,7 @@ class Topic:
             method_name = self.case_maps()[self.case(self.dialog.cases)]["method"]
             response = getattr(self, method_name)()
 
-        return ResponseFactory().create_response(response, dialog.msg)
+        return ResponseFactory().create_response(response, dialog.response_msg)
 
     def status(self):
         # todo add other status

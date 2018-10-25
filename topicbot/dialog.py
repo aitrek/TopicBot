@@ -6,7 +6,7 @@ import re
 from typing import List, Tuple
 
 from .base import Base
-from .response import Response
+from .response import ResponseFactory
 
 
 class Dialog(Base):
@@ -91,8 +91,18 @@ class Dialog(Base):
         return self._response
 
     @response.setter
-    def response(self, response_values: dict):
-        self._response = Response(response_values)
+    def response(self, response_data: dict):
+        """
+        :param response_data: Serialized data of a Response instance.
+        """
+        response_data = response_data["response_data"]
+        msg = response_data["msg"]
+        self._response = ResponseFactory().create_response(response_data, msg)
+
+    @property
+    def response_msg(self) -> dict:
+        """Message to create a response."""
+        raise NotImplementedError
 
     @property
     def name(self):
