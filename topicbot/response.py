@@ -24,6 +24,7 @@ class Response:
         """
         self._output = response_data.get("output", {})
         self._raw_data = response_data.get("raw_data", {})
+        self._delay = response_data.get("delay", 0)
         self._additional_msg = additional_msg
 
     def __repr__(self):
@@ -32,9 +33,16 @@ class Response:
                 "protocol": self.protocol,
                 "output": self._output,
                 "raw_data": self._raw_data,
+                "delay": self._delay,
                 "additional_msg": self._additional_msg
             }
         )
+
+    @property
+    def delay(self) -> float:
+        """Make it possible for Bot instance to control the time
+        to send out the response"""
+        return self._delay
 
     def template(self) -> dict:
         """A empty response values to be filled with real data
