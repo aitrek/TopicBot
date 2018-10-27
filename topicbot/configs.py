@@ -20,7 +20,7 @@ class Configs:
 
     def read(self, filenames, encoding=None):
         """Read and parse the configs file"""
-        if not self._loaded:
+        if not self._has_loaded:
             self._parser.read(filenames, encoding=encoding)
             self._has_loaded = True
         return self
