@@ -28,7 +28,7 @@ class Base:
     def __new__(cls, *args, **kwargs):
         if cls._storage is None:
             cls._storage = _get_storage()
-        return super().__new__()
+        return super().__new__(cls)
 
     def __repr__(self):
         return json.dumps(self.values)
