@@ -13,7 +13,6 @@ from .exceptions import MsgError
 from .decoraters import singleton
 
 
-@singleton
 class Bot:
 
     def __init__(self, config_path: str):
