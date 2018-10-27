@@ -36,9 +36,9 @@ class Client(Base):
         "context",             # Context of the conversation
         "grounding"            # The conversation grounding
     ]
-    _class_dialog = _custom_class_dialog()
-    _class_context = _custom_class_context()
-    _class_grounding = _custom_class_grounding()
+    _class_dialog = None
+    _class_context = None
+    _class_grounding = None
 
     def __init__(self, msg: dict):
         super().__init__(msg["user_id"])
@@ -49,6 +49,15 @@ class Client(Base):
         self._restore()
         self._dialog = None
         self._update(msg)
+
+    def __new__(cls, *args, **kwargs):
+        if cls._class_dialog is None:
+            cls._class_dialog = _custom_class_dialog()
+        if cls._class_context is None:
+            cls._class_context = _custom_class_context()
+        if cls._class_grounding is None:
+            _class_grounding = _custom_class_grounding()
+        return super().__new__(cls)
 
     def __del__(self):
         self._update_previous_topics()

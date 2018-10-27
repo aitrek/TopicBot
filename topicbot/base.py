@@ -16,7 +16,7 @@ def _get_storage() -> Storage:
 class Base:
 
     _attrs = []
-    _storage = _get_storage()
+    _storage = None
 
     def __init__(self, id: str=None):
         if id is None:
@@ -24,6 +24,11 @@ class Base:
         else:
             self._id = id
             self._restore()
+
+    def __new__(cls, *args, **kwargs):
+        if cls._storage is None:
+            cls._storage = _get_storage()
+        return super().__new__()
 
     def __repr__(self):
         return json.dumps(self.values)
