@@ -108,12 +108,35 @@ class Dialog(Base):
     def name(self):
         return self.domain + "." + self.intent if self.intent else self.domain
 
-    def _create_template(self, entities: List[dict]) -> str:
+    def _create_template(self,
+                         std_text: str,
+                         entities: List[dict]) -> str:
         """Create template with result from the ner method.
 
+        :param std_text: standardized text divided with only one space.
+            If the language is non-space like Chinese, Japanese,
+            it should be divided first.
         :param entities: sorted ner result.
         """
-        return " ".join([ent["value"] for ent in entities])
+        tpl = ""
+        idx = 0
+        start = 0
+        for word in std_text.split(" "):
+            end = start + len(word)
+
+            if idx <= len(entities) - 1:
+                if start == entities[idx]["start"] and end == entities[idx]["end"]:
+                    tpl += " " + "{" + entities[idx]["type"] + "}" \
+                        if tpl else "{" + entities[idx]["type"] + "}"
+                    idx += 1
+                else:
+                    tpl += " " + word if tpl else word
+            else:
+                tpl += " " + word if tpl else word
+
+            start = end
+
+        return tpl
 
     def _standardize_text(self, text: str) -> str:
         """Create standardized text"""
@@ -184,7 +207,7 @@ class Dialog(Base):
         text = self._msg.get("text", "")
         std_text = self._standardize_text(text)
         entities = self._sorted_ner(std_text)
-        template = self._create_template(entities)
+        template = self._create_template(std_text, entities)
         domain, intent, cases = self._intent_recognition(
             std_text=std_text,
             template=template,
