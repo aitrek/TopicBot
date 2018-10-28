@@ -10,7 +10,9 @@ from .storage import Storage
 
 
 def _get_storage() -> Storage:
-    return import_module(Configs().get("Base", "storage"))()
+    configs = Configs()
+    return import_module(module_path=configs.get("Base", "storage"),
+                         root_path=configs.get("Root", "root_path"))()
 
 
 class Base:
