@@ -52,6 +52,8 @@ class Client(Base):
         self._context = None
         self._topic = None
         self._restore()
+        # For the very first conversation, the context and ground
+        # will be still None after restored.
         if self._context is None:
             self._context = self._class_context.create_instance_from_msg(msg)
         if self._grounding is None:
