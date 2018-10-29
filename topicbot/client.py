@@ -67,7 +67,7 @@ class Client(Base):
         if cls._class_context is None:
             cls._class_context = _custom_class_context()
         if cls._class_grounding is None:
-            _class_grounding = _custom_class_grounding()
+            cls._class_grounding = _custom_class_grounding()
         return super().__new__(cls)
 
     def __del__(self):
