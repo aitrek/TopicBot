@@ -85,6 +85,8 @@ class Bot:
             for user_id in checks:
                 del self._clients[user_id]
 
+        return checks
+
     def actively_respond(self, user_id: str):
         """Actively response to the silent user."""
         cache = Base.get_cache_by_id(user_id)
