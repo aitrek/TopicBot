@@ -37,6 +37,7 @@ class Client(Base):
 
     _attrs = [
         "id",                  # Client instance id
+        "msg",                 # User message
         "previous_topics",     # Topic status list of previous Topic instances
         "context",             # Context of the conversation
         "grounding"            # The conversation grounding
@@ -47,6 +48,7 @@ class Client(Base):
 
     def __init__(self, msg: dict):
         super().__init__(msg["user_id"])
+        self._msg = msg
         self._previous_topics = None
         self._grounding = None
         self._context = None
@@ -66,6 +68,14 @@ class Client(Base):
 
     def __del__(self):
         self._update_previous_topics()
+
+    @property
+    def msg(self) -> dict:
+        return self._msg
+
+    @msg.setter
+    def msg(self, msg: dict):
+        self._msg = msg
 
     @property
     def previous_topics(self) -> list:
@@ -143,7 +153,7 @@ class Client(Base):
         # todo add other status
         return {
             "user_id": self.id,
-            "timestamp": time.time()
+            "timestamp": int(time.time())
         }
 
     def _update_previous_topics(self):

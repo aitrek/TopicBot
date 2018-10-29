@@ -57,7 +57,7 @@ class Base:
         return values
 
     @classmethod
-    def instanced_by_id(cls, id: str):
+    def instance_by_id(cls, id: str):
         raise NotImplementedError
 
     @classmethod
