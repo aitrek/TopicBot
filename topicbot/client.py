@@ -47,7 +47,7 @@ class Client(Base):
 
     def __init__(self, msg: dict):
         super().__init__(msg["user_id"])
-        self._previous_topics = []
+        self._previous_topics = None
         self._grounding = None
         self._context = None
         self._topic = None
@@ -68,8 +68,9 @@ class Client(Base):
         self._update_previous_topics()
 
     @property
-    def previous_topics(self):
-        return self._previous_topics
+    def previous_topics(self) -> list:
+        """Return listified OrderdDict items"""
+        return list(self._previous_topics.items())
 
     @previous_topics.setter
     def previous_topics(self, items: list):
@@ -154,6 +155,9 @@ class Client(Base):
         Update client data(dialog, context, grounding, previous_topics)
         with input message from user.
         """
+        if self._previous_topics is None:
+            self._previous_topics = OrderedDict()
+
         if self._context is None:
             self._context = self._class_context.create_instance_from_msg(msg)
         else:
