@@ -15,17 +15,17 @@ class Response:
 
     protocol = 0    # need to reset a new value in sub-class
 
-    def __init__(self, response_data: dict, additional_msg: dict):
+    def __init__(self, response_data: dict, msg_data: dict):
         """
         :param response_data: Response data from topic, which include the final
             reply to user.
-        :param additional_msg: The original message from user, offering additional
+        :param msg_data: The original data from input message, offering additional
             information, such as platform, version, etc.
         """
         self._output = response_data.get("output", {})
         self._raw_data = response_data.get("raw_data", {})
         self._delay = response_data.get("delay", 0)
-        self._additional_msg = additional_msg
+        self._msg_data = msg_data
 
     def __repr__(self):
         return json.dumps(
@@ -34,7 +34,7 @@ class Response:
                 "output": self._output,
                 "raw_data": self._raw_data,
                 "delay": self._delay,
-                "additional_msg": self._additional_msg
+                "msg_data": self._msg_data
             }
         )
 

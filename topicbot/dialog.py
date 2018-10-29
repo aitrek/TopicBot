@@ -100,8 +100,8 @@ class Dialog(Base):
                                                            additional_msg)
 
     @property
-    def response_msg(self) -> dict:
-        """Message to create a response."""
+    def response_msg_data(self) -> dict:
+        """Message data to offer input message data to create a response."""
         raise NotImplementedError
 
     @property
