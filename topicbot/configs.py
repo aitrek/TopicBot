@@ -16,7 +16,12 @@ class Configs:
     def get(self, section: str, option: str) -> str:
         if not self._has_loaded:
             raise ConfigDataError
-        return self._parser.get(section, option)
+        try:
+            value = self._parser.get(section, option)
+        except Exception as e:
+            # todo logging
+            value = ""
+        return value
 
     def read(self, filenames, encoding=None):
         """Read and parse the configs file"""
