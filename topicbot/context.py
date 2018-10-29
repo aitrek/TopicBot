@@ -17,6 +17,11 @@ class Context:
     def __repr__(self) -> str:
         return json.dumps(self.values)
 
+    @classmethod
+    def create_instance_from_msg(cls, msg: dict):
+        """Create instance with original message from user input."""
+        raise NotImplementedError
+
     def to_features(self) -> dict:
         """Extract extended features from the context data"""
         raise NotImplementedError

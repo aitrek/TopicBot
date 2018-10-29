@@ -52,6 +52,8 @@ class Client(Base):
         self._context = None
         self._topic = None
         self._restore()
+        if self._context is None:
+            self._context = self._class_context.create_instance_from_msg(msg)
         self._dialog = None
         self._update(msg)
 
@@ -162,16 +164,11 @@ class Client(Base):
         if self._topic is not None:
             self._previous_topics[self._topic.id] = self._topic.status()
 
-    def _extract_context_from_msg(self, msg: dict) -> dict:
-        """Extract necessary data from msg to initialize a Context instance."""
-        raise NotImplementedError
-
     def _update(self, msg: dict):
         """
         Update client data(dialog, context, grounding, previous_topics)
         with input message from user.
         """
-        self._context = self._class_context(self._extract_context_from_msg(msg))
         self._dialog = self._class_dialog(msg, self.context, self.grounding)
         self._topic = self._create_topic()
         self._context.update(self._dialog)
