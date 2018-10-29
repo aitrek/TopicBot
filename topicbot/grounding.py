@@ -13,6 +13,10 @@ class Grounding:
     def __repr__(self):
         return json.dumps(self.values)
 
+    def get(self, key: str):
+        """Get grounding data from self._data"""
+        return self._data.get(key)
+
     @property
     def values(self) -> dict:
         return self._data

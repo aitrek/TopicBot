@@ -52,12 +52,6 @@ class Client(Base):
         self._context = None
         self._topic = None
         self._restore()
-        # For the very first conversation, the context and ground
-        # will be still None after restored.
-        if self._context is None:
-            self._context = self._class_context.create_instance_from_msg(msg)
-        if self._grounding is None:
-            self._grounding = self._class_grounding()
         self._dialog = None
         self._update(msg)
 
@@ -100,19 +94,6 @@ class Client(Base):
     def grounding(self, grounding_values: dict):
         self._grounding = self._class_grounding(grounding_values)
 
-    def _create_topic(self) -> Topic:
-        if self._need_change_topic():
-            self._grounding.update(self._context)
-            self._context = self._class_context()   # an empty context
-            topic = TopicFactory().create_topic(self._dialog.name)
-        else:
-            last_topic = self._previous_topics.popitem()
-            topic_id = last_topic[0]
-            topic_name = last_topic[1]["name"]
-            topic = TopicFactory().create_topic(topic_name, topic_id)
-
-        return topic
-
     def _need_change_topic(self) -> bool:
         """Check if need to change to a new topic
 
@@ -138,17 +119,17 @@ class Client(Base):
     def respond(self) -> List[Response]:
         """Respond to user according to msg, context and grounding."""
         results = []
-        response_msg = self._dialog.response_msg
+        msg_data = self._dialog.response_msg_data
         responses = self._topic.respond()
 
         if isinstance(responses, dict):
             results.append(
-                ResponseFactory().create_response(responses, response_msg)
+                ResponseFactory().create_response(responses, msg_data)
             )
         elif isinstance(responses, (tuple, list)):
             for res in responses:
                 results.append(
-                    ResponseFactory().create_response(res, response_msg)
+                    ResponseFactory().create_response(res, msg_data)
                 )
         else:
             # todo logging
@@ -173,6 +154,23 @@ class Client(Base):
         Update client data(dialog, context, grounding, previous_topics)
         with input message from user.
         """
+        if self._context is None:
+            self._context = self._class_context.create_instance_from_msg(msg)
+        else:
+            self._context.consume(msg)
+
+        if self._grounding is None:
+            self._grounding = self._class_grounding()
+
         self._dialog = self._class_dialog(msg, self.context, self.grounding)
-        self._topic = self._create_topic()
-        self._context.update(self._dialog)
+
+        if self._need_change_topic():
+            self._grounding.update(self._context)
+            self._context.update(self._dialog)
+            self._topic = TopicFactory().create_topic(self._dialog.name)
+        else:
+            self._context.update(self._dialog)
+            last_topic = self._previous_topics.popitem()
+            topic_id = last_topic[0]
+            topic_name = last_topic[1]["name"]
+            self._topic = TopicFactory().create_topic(topic_name, topic_id)
