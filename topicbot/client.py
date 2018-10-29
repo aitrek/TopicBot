@@ -47,7 +47,7 @@ class Client(Base):
 
     def __init__(self, msg: dict):
         super().__init__(msg["user_id"])
-        self._previous_topics = None
+        self._previous_topics = []
         self._grounding = None
         self._context = None
         self._topic = None
@@ -120,7 +120,7 @@ class Client(Base):
         """Respond to user according to msg, context and grounding."""
         results = []
         msg_data = self._dialog.response_msg_data
-        responses = self._topic.respond()
+        responses = self._topic.respond(self._dialog)
 
         if isinstance(responses, dict):
             results.append(
