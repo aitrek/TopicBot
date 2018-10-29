@@ -23,6 +23,10 @@ class Configs:
             value = ""
         return value
 
+    @property
+    def has_loaded(self) -> bool:
+        return self._has_loaded
+
     def read(self, filenames, encoding=None):
         """Read and parse the configs file"""
         if not self._has_loaded:

@@ -25,11 +25,13 @@ class Bot:
     _silence_threhold_variance = None
 
     def __init__(self, config_path: str):
-        Configs().read(config_path)
         self._responses = dict()
         self._lock = RLock()
 
     def __new__(cls, *args, **kwargs):
+        if not Configs().has_loaded:
+            Configs().read(args[0])
+
         if cls._silence_threhold is None:
             cls._silence_threhold = Configs().get("Bot", "silence_threhold")
             if not cls._silence_threhold:
