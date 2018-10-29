@@ -54,6 +54,8 @@ class Client(Base):
         self._restore()
         if self._context is None:
             self._context = self._class_context.create_instance_from_msg(msg)
+        if self._grounding is None:
+            self._grounding = self._class_grounding()
         self._dialog = None
         self._update(msg)
 
