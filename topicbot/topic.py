@@ -110,18 +110,25 @@ class TopicFactory:
     def __init__(self):
         self._topics = self._load_topics()
 
-    def _load_topics(self) -> Dict[str, Type[Topic]]:
-        """Load all topics from topic path written in Configs instance"""
+    def _get_all_paths(self, path: str) -> List[str]:
+        all_paths = [path]
+        for f in os.listdir(path):
+            sub_path = os.path.join(path, f)
+            if os.path.isdir(sub_path):
+                all_paths += self._get_all_paths(sub_path)
+        return all_paths
+
+    def _load_topics_by_top_folder(self, top_folder: str) -> dict:
         topics = {}
-        path = Configs().get("Topics", "topic_path")
-        if os.path.isdir(path):
+        for path in self._get_all_paths(top_folder):
             for f in os.listdir(path):
 
                 if not f.endswith(".py"):
                     continue
 
-                module_spec = importlib.util.spec_from_file_location(
-                    f, os.path.join(path, f))
+                sub_path = os.path.join(path, f)
+
+                module_spec = importlib.util.spec_from_file_location(f, sub_path)
                 module = importlib.util.module_from_spec(module_spec)
                 module_spec.loader.exec_module(module)
 
@@ -133,6 +140,28 @@ class TopicFactory:
                             topics[topic_name] = memb
                         except NotImplementedError:
                             continue
+
+        return topics
+
+    def _load_topics(self) -> Dict[str, Type[Topic]]:
+        """Load all topics from topic path written in Configs instance"""
+        topics = {}
+        try:
+            topics = self._load_topics_by_top_folder(
+                Configs().get("Topics", "topic_path"))
+        except FileNotFoundError:
+            # todo logging
+            pass
+
+        if not topics:
+            try:
+                topics = self._load_topics_by_top_folder(
+                    os.path.join(Configs().get("Root", "root_path"),
+                                 Configs().get("Topics", "topic_path"))
+                )
+            except FileNotFoundError:
+                # todo logging
+                pass
 
         return topics
 
