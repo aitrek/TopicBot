@@ -7,6 +7,8 @@ import redis
 
 from threading import RLock
 
+from .decoraters import singleton
+
 
 class Storage:
     """Base class for cache storage"""
@@ -39,6 +41,7 @@ class Storage:
         return self.__contains__(key)
 
 
+@singleton
 class InMemoryStorage(Storage):
     """Memory-based implementation."""
 
