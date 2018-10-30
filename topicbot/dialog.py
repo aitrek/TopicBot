@@ -161,11 +161,13 @@ class Dialog(Base):
     def _intent_recognition(self,
                             std_text: str,
                             template: str,
+                            context_values: dict,
                             extended_features: dict) -> Tuple[str, str, List[str]]:
         """Intent recognition according.
 
         :param std_text: standardized input text
         :param template: template created with ner result
+        :param context_values: context values
         :param extended_features: features from context
 
         :return: tuple with domain, intent, cases
@@ -211,6 +213,7 @@ class Dialog(Base):
         domain, intent, cases = self._intent_recognition(
             std_text=std_text,
             template=template,
+            context_values=self._context.values if self._context else {},
             extended_features=self._context.to_features() if self._context else {}
         )
         return {
