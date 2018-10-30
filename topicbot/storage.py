@@ -8,6 +8,7 @@ import redis
 from threading import RLock
 
 from .decoraters import singleton
+from .utils import CustomJSONEncoder
 
 
 class Storage:
@@ -61,7 +62,7 @@ class InMemoryStorage(Storage):
 
         with self._lock:
             self._expires[key] = expire
-            self._store[key] = value
+            self._store[key] = json.dumps(value, cls=CustomJSONEncoder)
 
     def clear(self):
         with self._lock:
@@ -85,7 +86,7 @@ class InMemoryStorage(Storage):
         if time.time() > self._expires[key]:
             self.delete(key)
             raise KeyError
-        return self._store[key]
+        return json.loads(self._store[key])
 
 
 class RedisStorage(Storage):
@@ -108,7 +109,9 @@ class RedisStorage(Storage):
 
         with self._lock:
             self._expires[key] = expire
-        self._store.hset(self._redis_name, self._redis_name + key, value)
+        self._store.hset(self._redis_name,
+                         self._redis_name + key,
+                         json.dumps(value, cls=CustomJSONEncoder))
 
     def clear(self):
         with self._lock:

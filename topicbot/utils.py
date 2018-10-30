@@ -2,6 +2,7 @@
 
 import os
 import re
+import json
 import importlib
 import importlib.util
 
@@ -76,3 +77,12 @@ def import_module(module_path: str, root_path: str=""):
     # error
     else:
         raise ModuleNotFoundError
+
+
+class CustomJSONEncoder(json.JSONEncoder):
+
+    def default(self, obj):
+        try:
+            return obj.values
+        except TypeError:
+            return super().default(obj)
