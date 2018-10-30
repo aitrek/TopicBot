@@ -47,14 +47,13 @@ class Client(Base):
     _class_grounding = None
 
     def __init__(self, msg: dict):
+        self._previous_topics = None
+        self._context = None
+        self._grounding = None
         super().__init__(msg["user_id"])
         self._msg = msg
-        self._previous_topics = None
-        self._grounding = None
-        self._context = None
-        self._topic = None
-        self._restore()
         self._dialog = None
+        self._topic = None
         self._update(msg)
 
     def __new__(cls, *args, **kwargs):
@@ -65,9 +64,6 @@ class Client(Base):
         if cls._class_grounding is None:
             cls._class_grounding = _custom_class_grounding()
         return super().__new__(cls)
-
-    def __del__(self):
-        self._update_previous_topics()
 
     @property
     def msg(self) -> dict:
@@ -188,3 +184,7 @@ class Client(Base):
             topic_id = last_topic[0]
             topic_name = last_topic[1]["name"]
             self._topic = TopicFactory().create_topic(topic_name, topic_id)
+
+    def save(self):
+        self._update_previous_topics()
+        super().save()
