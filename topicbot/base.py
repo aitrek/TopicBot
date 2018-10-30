@@ -67,7 +67,7 @@ class Base:
     def _cache(self) -> dict:
         """Get data cached in storage"""
         try:
-            return json.loads(self._storage.get(self._id))
+            return self._storage.get(self._id)
         except KeyError:
             return {}
 
