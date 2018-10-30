@@ -172,4 +172,4 @@ class TopicFactory:
             any conversation data will be returned. Otherwise, the returned
             instance will have previous conversation data restored from cache.
         """
-        return self._topics.get(topic_name, "others")(id)
+        return self._topics.get(topic_name)(id)
