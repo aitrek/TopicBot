@@ -13,9 +13,9 @@ from .client import Client
 from .exceptions import MsgError
 
 
-_default_silence_threhold = 600             # 10 minutes
-_default_silence_threhold_variance = 30     # 30 seconds
-_max_clients_num = 1024
+_default_silence_threhold = 600
+_default_silence_threhold_variance = 30
+_default_max_clients_num = 1024     # maximum clients to track
 
 
 class Bot:
@@ -23,9 +23,10 @@ class Bot:
     _clients = OrderedDict()
     _silence_threhold = None
     _silence_threhold_variance = None
+    _max_clients_num = None
+    _responses = dict()
 
     def __init__(self, config_path: str):
-        self._responses = dict()
         self._lock = RLock()
 
     def __new__(cls, *args, **kwargs):
@@ -46,6 +47,13 @@ class Bot:
                 cls._silence_threhold_variance = _default_silence_threhold_variance
             else:
                 cls._silence_threhold_variance = int(cls._silence_threhold_variance)
+
+        if cls._max_clients_num is None:
+            cls._max_clients_num = Configs().get("Bot", "max_clients_num")
+            if not cls._max_clients_num:
+                cls._max_clients_num = _default_max_clients_num
+            else:
+                cls._max_clients_num = int(cls._max_clients_num)
 
         return super().__new__(cls)
 
@@ -72,6 +80,7 @@ class Bot:
                     self._responses[timestamp].append(response)
 
         self._update(client)
+        client.save()
 
     def silence_checking(self):
         """Check if users has been silent for a long time."""
@@ -107,7 +116,7 @@ class Bot:
 
     def _update(self, client: Client):
         with self._lock:
-            while len(self._clients) > _max_clients_num:
+            while len(self._clients) > self._max_clients_num:
                 self._clients.popitem(last=True)
             self._clients[client.id] = client.status().get("timestamp",
                                                            int(time.time()))
