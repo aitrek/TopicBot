@@ -65,7 +65,7 @@ class Bot:
             2.text - what user said;
             3.other information such as customer id, platform, app version, etc.
         """
-        for field in ["user_id", "text"]:
+        for field in ["user_id"]:
             if not str(msg.get(field, "")).strip():
                 raise MsgError
 
