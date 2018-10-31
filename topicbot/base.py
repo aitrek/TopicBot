@@ -74,7 +74,9 @@ class Base:
     @classmethod
     def get_cache_by_id(cls, id: str):
         """Get data from storage. Raise KeyError if no data found."""
-        return json.loads(cls._storage.get(id))
+        if cls._storage is None:
+            cls._storage = _get_storage()
+        return cls._storage.get(id)
 
     def _restore(self):
         """Restore cache data to self instance"""
