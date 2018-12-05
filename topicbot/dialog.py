@@ -3,7 +3,7 @@
 import logging
 import re
 
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 from .base import Base
 from .response import ResponseFactory
@@ -78,13 +78,32 @@ class Dialog(Base):
     def domain(self) -> str:
         return self._parsed_data.get("domain", "")
 
+    @domain.setter
+    def domain(self, domain: str):
+        if domain:
+            self._parsed_data["domain"] = domain
+
     @property
     def intent(self) -> str:
         return self._parsed_data.get("intent", "")
 
+    @intent.setter
+    def intent(self, intent: str):
+        if intent:
+            self._parsed_data["intent"] = intent
+
     @property
     def cases(self) -> List[str]:
         return self._parsed_data.get("cases", [])
+
+    @cases.setter
+    def cases(self, cases: Union[str, List[str]]):
+        if isinstance(cases, str):
+            self._parsed_data["cases"] = [cases]
+        elif isinstance(cases, list):
+            new_cases = [case for case in cases if isinstance(case, str)]
+            if new_cases:
+                self._parsed_data["cases"] = new_cases
 
     @property
     def response(self):
