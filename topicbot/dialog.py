@@ -125,7 +125,21 @@ class Dialog(Base):
 
     @property
     def name(self):
-        return self.domain + "." + self.intent if self.intent else self.domain
+        name = self.domain
+
+        if self.intent:
+            name += "." + self.intent
+        else:
+            name += "." + self.domain
+
+        if not self.cases:
+            name += name.split(".")[-1]
+        elif len(self.cases) == 1:
+            name += "." + self.cases[0]
+        else:
+            name += "." + "multiple_cases"
+
+        return name
 
     def _create_template(self,
                          std_text: str,
