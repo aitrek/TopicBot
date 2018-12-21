@@ -84,5 +84,5 @@ class CustomJSONEncoder(json.JSONEncoder):
     def default(self, obj):
         try:
             return obj.values
-        except TypeError:
-            return super().default(obj)
+        except Exception as e:
+            return str(obj)
