@@ -144,7 +144,7 @@ class Client(Base):
 
         return results
 
-    def status(self) -> dict:
+    def state(self) -> dict:
         """Status of this Client instance"""
         # todo add other status
         return {
@@ -152,9 +152,9 @@ class Client(Base):
             "timestamp": int(time.time())
         }
 
-    def _update_previous_topics(self):
-        if self._topic is not None:
-            self._previous_topics[self._topic.id] = self._topic.status()
+    def _update_previous_topics(self, topic: Topic):
+        if topic is not None:
+            self._previous_topics[topic.id] = topic.status()
 
     def _update(self, msg: dict):
         """
@@ -184,7 +184,3 @@ class Client(Base):
             topic_id = last_topic[0]
             topic_name = last_topic[1]["name"]
             self._topic = TopicFactory().create_topic(topic_name, topic_id)
-
-    def save(self):
-        self._update_previous_topics()
-        super().save()
