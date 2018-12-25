@@ -82,7 +82,7 @@ class Topic:
         """Return Response instance if some param miss, or None if no param missing."""
         raise NotImplementedError
 
-    def respond(self, dialog: Dialog) -> Union[dict, List[dict], Tuple[dict]]:
+    def respond(self, dialog: Dialog, **kwargs) -> Union[dict, List[dict], Tuple[dict]]:
         """Respond to user input"""
         self._dialog = dialog
         # check params
@@ -109,6 +109,7 @@ class TopicFactory:
 
     def __init__(self):
         self._topics = self._load_topics()
+        self._default_topic_name = Configs().get("Topics", "default_topic_name")
 
     def _get_all_paths(self, path: str) -> List[str]:
         all_paths = [path]
@@ -165,6 +166,9 @@ class TopicFactory:
 
         return topics
 
+    def has_topic(self, topic_name: str=""):
+        return topic_name in self._topics
+
     def create_topic(self, topic_name: str="others", id: str=None) -> Topic:
         """Create specific sub-Topic instance according to topic name.
 
@@ -172,4 +176,4 @@ class TopicFactory:
             any conversation data will be returned. Otherwise, the returned
             instance will have previous conversation data restored from cache.
         """
-        return self._topics.get(topic_name)(id)
+        return self._topics.get(topic_name, self._default_topic_name)(id)
