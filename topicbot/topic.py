@@ -109,7 +109,15 @@ class TopicFactory:
 
     def __init__(self):
         self._topics = self._load_topics()
-        self._default_topic_name = Configs().get("Topics", "default_topic_name")
+        self._default_topic = Configs().get("Topics", "default_topic")
+
+    @property
+    def default_topic_name(self):
+        return ".".join(self._default_topic.split(".")[:2])
+
+    @property
+    def default_topic_cases(self):
+        return [self._default_topic.split(".")[-1]]
 
     def _get_all_paths(self, path: str) -> List[str]:
         all_paths = [path]
@@ -177,4 +185,4 @@ class TopicFactory:
             instance will have previous conversation data restored from cache.
         """
         return self._topics.get(topic_name,
-                                self._topics[self._default_topic_name])(id)
+                                self._topics[self.default_topic_name])(id)
