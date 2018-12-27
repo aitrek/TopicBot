@@ -121,12 +121,19 @@ class Bot:
 
         return checks
 
-    def actively_respond(self, user_id: str):
-        """Actively response to the silent user."""
+    def actively_respond(self, user_id: str, initiative_code: int):
+        """
+        Actively response to the silent user.
+
+        :param user_id:
+        :param initiative_code:
+        0 - silence
+        """
+        # get the cached msg format
         cache = Base.get_cache_by_id(user_id)
         if cache:
             msg = cache.get("msg", {})
-            if msg:
+            if msg and initiative_code == 0:
                 msg["text"] = ""
                 msg["is_active"] = True
                 self.respond(msg)
