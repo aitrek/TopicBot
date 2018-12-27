@@ -6,6 +6,7 @@ import random
 
 from threading import RLock
 from collections import OrderedDict
+from typing import Dict
 
 from .configs import Configs
 from .base import Base
@@ -82,13 +83,37 @@ class Bot:
         self._update(client)
         client.save()
 
-    def silence_checking(self):
-        """Check if users has been silent for a long time."""
-        checks = []
+    def initiative_response_checking(self) -> Dict[str, int]:
+        """Check if users need to be responded to initiatively.
+
+        The results is a list of dict with user_id as key and corresponding
+        initiative response code as value, like:
+        {
+            "user_id0": code0,
+            ...
+        }
+
+        Response code:
+        0 - silence
+        """
+        checks = {}
+        for method in self._initiative_response_checking_methods():
+            checks.update(method())
+        return checks
+
+    def _initiative_response_checking_methods(self):
+        """Return intiative response checking methods."""
+        # other initiative response checking methods
+        # could be added in the returned list.
+        return [self._silence_checking]
+
+    def _silence_checking(self) -> Dict[str, int]:
+        """Check if users have been silent for a long time."""
+        checks = {}
         for user_id, ts in self._clients.items():
             if time.time() - ts > self._silence_threhold - int(
                     random.normalvariate(0, self._silence_threhold_variance)):
-                checks.append(user_id)
+                checks[user_id] = 0
 
         with self._lock:
             for user_id in checks:
@@ -118,6 +143,6 @@ class Bot:
         with self._lock:
             while len(self._clients) > self._max_clients_num:
                 self._clients.popitem(last=True)
-            self._clients[client.id] = client.status().get("timestamp",
+            self._clients[client.id] = client.state().get("timestamp",
                                                            int(time.time()))
 
