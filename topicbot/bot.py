@@ -135,7 +135,7 @@ class Bot:
             msg = cache.get("msg", {})
             if msg and initiative_code == 0:
                 msg["text"] = ""
-                msg["is_active"] = True
+                msg["is_silent"] = True
                 self.respond(msg)
 
     def get_responses(self):
