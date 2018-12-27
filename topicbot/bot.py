@@ -133,9 +133,9 @@ class Bot:
         cache = Base.get_cache_by_id(user_id)
         if cache:
             msg = cache.get("msg", {})
-            if msg and initiative_code == 0:
+            if msg:
                 msg["text"] = ""
-                msg["is_silent"] = True
+                msg["initiative_code"] = initiative_code
                 self.respond(msg)
 
     def get_responses(self):
