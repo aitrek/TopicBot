@@ -4,13 +4,12 @@ import logging
 import uuid
 import json
 
-from .configs import Configs
+from .configs import configs
 from .utils import import_module
 from .storage import Storage
 
 
 def _get_storage() -> Storage:
-    configs = Configs()
     return import_module(module_path=configs.get("Base", "storage"),
                          root_path=configs.get("Root", "root_path"))()
 

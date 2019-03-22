@@ -10,7 +10,7 @@ from inspect import isclass
 from typing import Dict, Type, List, Tuple, Union
 
 from .decoraters import singleton
-from .configs import Configs
+from .configs import configs
 from .dialog import Dialog
 
 
@@ -109,7 +109,7 @@ class TopicFactory:
 
     def __init__(self):
         self._topics = self._load_topics()
-        self._default_topic = Configs().get("Topics", "default_topic")
+        self._default_topic = configs.get("Topics", "default_topic")
 
     @property
     def default_topic_name(self):
@@ -157,7 +157,7 @@ class TopicFactory:
         topics = {}
         try:
             topics = self._load_topics_by_top_folder(
-                Configs().get("Topics", "topic_path"))
+                configs.get("Topics", "topic_path"))
         except FileNotFoundError:
             # todo logging
             pass
@@ -165,8 +165,8 @@ class TopicFactory:
         if not topics:
             try:
                 topics = self._load_topics_by_top_folder(
-                    os.path.join(Configs().get("Root", "root_path"),
-                                 Configs().get("Topics", "topic_path"))
+                    os.path.join(configs.get("Root", "root_path"),
+                                 configs.get("Topics", "topic_path"))
                 )
             except FileNotFoundError:
                 # todo logging

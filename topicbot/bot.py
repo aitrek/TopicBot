@@ -8,7 +8,7 @@ from threading import RLock
 from collections import OrderedDict
 from typing import Dict
 
-from .configs import Configs
+from .configs import configs
 from .base import Base
 from .client import Client
 from .exceptions import MsgError
@@ -31,18 +31,18 @@ class Bot:
         self._lock = RLock()
 
     def __new__(cls, *args, **kwargs):
-        if not Configs().has_loaded:
-            Configs().read(args[0])
+        if not configs.has_loaded:
+            configs.read(args[0])
 
         if cls._silence_threhold is None:
-            cls._silence_threhold = Configs().get("Bot", "silence_threhold")
+            cls._silence_threhold = configs.get("Bot", "silence_threhold")
             if not cls._silence_threhold:
                 cls._silence_threhold = _default_silence_threhold
             else:
                 cls._silence_threhold = int(cls._silence_threhold)
 
         if cls._silence_threhold_variance is None:
-            cls._silence_threhold_variance = Configs().get(
+            cls._silence_threhold_variance = configs.get(
                 "Bot", "silence_threhold_variance")
             if not cls._silence_threhold_variance:
                 cls._silence_threhold_variance = _default_silence_threhold_variance
@@ -50,7 +50,7 @@ class Bot:
                 cls._silence_threhold_variance = int(cls._silence_threhold_variance)
 
         if cls._max_clients_num is None:
-            cls._max_clients_num = Configs().get("Bot", "max_clients_num")
+            cls._max_clients_num = configs.get("Bot", "max_clients_num")
             if not cls._max_clients_num:
                 cls._max_clients_num = _default_max_clients_num
             else:

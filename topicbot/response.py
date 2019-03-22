@@ -7,7 +7,7 @@ import importlib.util
 
 from inspect import isclass
 
-from .configs import Configs
+from .configs import configs
 from .decoraters import singleton
 
 
@@ -61,7 +61,7 @@ class ResponseFactory:
 
     def _load_responses(self):
         responses = {}
-        path = Configs().get("Responses", "response_path")
+        path = configs.get("Responses", "response_path")
         if os.path.isdir(path):
             for f in os.listdir(path):
 

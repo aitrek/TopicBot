@@ -10,27 +10,25 @@ from .base import Base
 from .dialog import Dialog
 from .topic import Topic, TopicFactory
 from .response import Response, ResponseFactory
-from .configs import Configs
+from .configs import configs
 from .utils import import_module
 from .grounding import Grounding
 from .context import Context
 
-_configs = Configs()
-
 
 def _custom_class_dialog() -> Type[Dialog]:
-    return import_module(module_path=_configs.get("Client", "class_dialog"),
-                         root_path=_configs.get("Root", "root_path"))
+    return import_module(module_path=configs.get("Client", "class_dialog"),
+                         root_path=configs.get("Root", "root_path"))
 
 
 def _custom_class_context() -> Type[Context]:
-    return import_module(module_path=_configs.get("Client", "class_context"),
-                         root_path=_configs.get("Root", "root_path"))
+    return import_module(module_path=configs.get("Client", "class_context"),
+                         root_path=configs.get("Root", "root_path"))
 
 
 def _custom_class_grounding() -> Type[Grounding]:
-    return import_module(module_path=_configs.get("Client", "class_grounding"),
-                         root_path=_configs.get("Root", "root_path"))
+    return import_module(module_path=configs.get("Client", "class_grounding"),
+                         root_path=configs.get("Root", "root_path"))
 
 
 class Client(Base):
