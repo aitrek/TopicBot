@@ -8,7 +8,7 @@ import importlib.util
 from inspect import isclass
 
 from .configs import configs
-from .decoraters import singleton
+from topicbot.utils import singleton
 
 
 class Response:

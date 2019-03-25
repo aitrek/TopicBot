@@ -9,7 +9,7 @@ import importlib.util
 from inspect import isclass
 from typing import Dict, Type, List, Tuple, Union
 
-from .decoraters import singleton
+from topicbot.utils import singleton
 from .configs import configs
 from .dialog import Dialog
 

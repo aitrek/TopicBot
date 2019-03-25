@@ -27,7 +27,13 @@ class Bot:
     _max_clients_num = None
     _responses = dict()
 
-    def __init__(self, config_path: str):
+    def __init__(self, configs_path: str):
+        """
+
+        Parameters
+        ----------
+        configs_path: absolute path of the config file.
+        """
         self._lock = RLock()
 
     def __new__(cls, *args, **kwargs):
@@ -152,4 +158,3 @@ class Bot:
                 self._clients.popitem(last=True)
             self._clients[client.id] = client.state().get("timestamp",
                                                            int(time.time()))
-

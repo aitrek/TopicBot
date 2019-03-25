@@ -7,7 +7,7 @@ import redis
 
 from threading import RLock
 
-from .decoraters import singleton
+from topicbot.utils import singleton
 from .utils import CustomJSONEncoder
 
 

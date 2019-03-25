@@ -86,3 +86,15 @@ class CustomJSONEncoder(json.JSONEncoder):
             return obj.values
         except Exception as e:
             return str(obj)
+
+
+def singleton(cls, *args, **kwargs):
+
+    instances = {}
+
+    def wrapper(*args, **kwargs):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kwargs)
+        return instances[cls]
+
+    return wrapper
