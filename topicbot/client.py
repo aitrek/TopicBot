@@ -44,12 +44,33 @@ class Client(Base):
     _class_context = None
     _class_grounding = None
 
-    def __init__(self, msg: dict):
+    def __init__(self, msg: dict, ner, intent_classifier):
+        """
+
+        Parameters
+        ----------
+        msg: message from user
+        ner: instance of named-entity recognition which has method ner(text) to
+            return the result of entities in structure as below:
+            [
+                {
+                    "start": xxx,       # int, start position of a entity
+                    "end": xxx,         # int, end position of a entity
+                    "value": xxx,       # str, value of a entity
+                    "type": xxx         # str, type of a entity
+                },
+                ...
+            ]
+        intent_classifier: instance of intent classifier which has method
+            predict(text, context) to predict user's intent.
+        """
         self._previous_topics = None
         self._context = None
         self._grounding = None
         super().__init__(msg["user_id"])
         self._msg = msg
+        self._ner = ner
+        self._intent_classifier = intent_classifier
         self._dialog = None
         self._topic = None
         self._update(msg)
@@ -171,6 +192,7 @@ class Client(Base):
             self._grounding = self._class_grounding()
 
         self._dialog = self._class_dialog(msg, self.context, self.grounding)
+        self._dialog.parse(self._ner, self._intent_classifier)
 
         if self._need_change_topic():
             self._grounding.update(self._context)

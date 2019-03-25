@@ -27,7 +27,7 @@ class Bot:
     _max_clients_num = None
     _responses = dict()
 
-    def __init__(self, configs_path: str):
+    def __init__(self, configs_path: str, ner, intent_classifier):
         """
 
         Parameters
@@ -35,6 +35,8 @@ class Bot:
         configs_path: absolute path of the config file.
         """
         self._lock = RLock()
+        self._ner = ner
+        self._intent_classifier = intent_classifier
 
     def __new__(cls, *args, **kwargs):
         if not configs.has_loaded:
@@ -51,9 +53,11 @@ class Bot:
             cls._silence_threhold_variance = configs.get(
                 "Bot", "silence_threhold_variance")
             if not cls._silence_threhold_variance:
-                cls._silence_threhold_variance = _default_silence_threhold_variance
+                cls._silence_threhold_variance = \
+                    _default_silence_threhold_variance
             else:
-                cls._silence_threhold_variance = int(cls._silence_threhold_variance)
+                cls._silence_threhold_variance = \
+                    int(cls._silence_threhold_variance)
 
         if cls._max_clients_num is None:
             cls._max_clients_num = configs.get("Bot", "max_clients_num")
@@ -76,7 +80,7 @@ class Bot:
             if not str(msg.get(field, "")).strip():
                 raise MsgError
 
-        client = Client(msg)
+        client = Client(msg, self._ner, self._intent_classifier)
         responses = client.respond()
         with self._lock:
             for response in responses:
@@ -156,5 +160,5 @@ class Bot:
         with self._lock:
             while len(self._clients) > self._max_clients_num:
                 self._clients.popitem(last=True)
-            self._clients[client.id] = client.state().get("timestamp",
-                                                           int(time.time()))
+            self._clients[client.id] = client.state().get(
+                "timestamp", int(time.time()))
