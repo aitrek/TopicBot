@@ -177,12 +177,27 @@ class TopicFactory:
     def has_topic(self, topic_name: str=""):
         return topic_name in self._topics
 
-    def create_topic(self, topic_name: str="others", id: str=None) -> Topic:
-        """Create specific sub-Topic instance according to topic name.
+    def _get_topic_name(self, intent_label: str) -> str:
+        """Get topic name through comparing intent_label and topic names."""
+        match = 0
+        topic_name = ""
+        for name in self._topics:
+            score = len(name)
+            if intent_label.startswith(name) and score > match:
+                topic_name = name
+                match = score
+        return topic_name
+
+    def create_topic(self, intent_labels: str=List[str], id: str=None) -> List[Topic]:
+        """Create specific sub-Topic instances according to topic names.
 
         :return: If parameter id is None, a completely empty instance without
             any conversation data will be returned. Otherwise, the returned
             instance will have previous conversation data restored from cache.
         """
-        return self._topics.get(topic_name,
-                                self._topics[self.default_topic_name])(id)
+        topics = []
+        topic_names = [self._get_topic_name(label) for label in intent_labels]
+        for name in [n for n in topic_names if n]:
+            if name in self._topics:
+                topics.append(self._topics[name](id))
+        return topics if topics else [self._topics[self.default_topic_name](id)]

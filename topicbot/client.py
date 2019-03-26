@@ -72,7 +72,7 @@ class Client(Base):
         self._ner = ner
         self._intent_classifier = intent_classifier
         self._dialog = None
-        self._topic = None
+        self._topics = []
         self._update(msg)
 
     def __new__(cls, *args, **kwargs):
@@ -124,20 +124,17 @@ class Client(Base):
         """Check if need to change to a new topic
 
         Processing logic:
-        1. True if the current topic is None.
-        2. True if the dialog domain changes.
-        3. True if the dialog remains unchanged but intent changes.
+        1. True if current topic is empty.
+        2. True if previous_topics is empty.
+        3. True if the last topic not in intent_labels.
         4. Otherwise False.
         """
-        def last_topic_name(previous_topics: OrderedDict) -> str:
-            if not previous_topics:
-                return ""
-            last_id = list(previous_topics.keys())[-1]
-            return previous_topics[last_id]["name"]
-
-        if self._topic is None:
+        if not self._topics:
             return True
-        elif self._dialog.name != last_topic_name(self._previous_topics):
+
+        if not self.previous_topics:
+            return True
+        elif self.previous_topics[-1] not in self._dialog.intent_labels:
             return True
         else:
             return False
@@ -145,21 +142,19 @@ class Client(Base):
     def respond(self) -> List[Response]:
         """Respond to user according to msg, context and grounding."""
         results = []
-        msg_data = self._dialog.response_msg_data
-        responses = self._topic.respond(self._dialog)
-
-        if isinstance(responses, dict):
-            results.append(
-                ResponseFactory().create_response(responses, msg_data)
-            )
-        elif isinstance(responses, (tuple, list)):
-            for res in responses:
+        for topic in self._topics:
+            responses = topic.respond(self._dialog)
+            if isinstance(responses, dict):
                 results.append(
-                    ResponseFactory().create_response(res, msg_data)
-                )
-        else:
-            # todo logging
-            pass
+                    ResponseFactory().create_response(
+                        responses, self._dialog.msg))
+            elif isinstance(responses, (tuple, list)):
+                for res in responses:
+                    results.append(
+                        ResponseFactory().create_response(
+                            res, self._dialog.msg))
+            else:
+                pass
 
         return results
 
@@ -197,10 +192,11 @@ class Client(Base):
         if self._need_change_topic():
             self._grounding.update(self._context)
             self._context.update(self._dialog)
-            self._topic = TopicFactory().create_topic(self._dialog.name)
+            self._topics = TopicFactory().create_topic(
+                self._dialog.intent_labels)
         else:
             self._context.update(self._dialog)
             last_topic = self._previous_topics.popitem()
             topic_id = last_topic[0]
-            topic_name = last_topic[1]["name"]
-            self._topic = TopicFactory().create_topic(topic_name, topic_id)
+            topic_name = last_topic[1][-1]
+            self._topics = TopicFactory().create_topic([topic_name], topic_id)

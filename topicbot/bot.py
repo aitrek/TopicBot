@@ -81,9 +81,8 @@ class Bot:
                 raise MsgError
 
         client = Client(msg, self._ner, self._intent_classifier)
-        responses = client.respond()
         with self._lock:
-            for response in responses:
+            for response in client.respond():
                 timestamp = int(time.time()) + response.delay
                 if timestamp not in self._responses:
                     self._responses[timestamp] = [response]
