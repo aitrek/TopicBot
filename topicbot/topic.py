@@ -130,13 +130,8 @@ class TopicFactory:
 
         """
         topics = {}
-        for path in os.listdir(models_folder):
-            if os.path.isdir(os.path.join(models_folder, path)):
-                topics[path] = {}
 
         for path in self._get_all_paths(models_folder):
-
-            customer = path.split("/")[0]
 
             for f in os.listdir(path):
 
@@ -154,7 +149,7 @@ class TopicFactory:
                     if isclass(memb) and issubclass(memb, Topic):
                         try:
                             topic_name = memb._name()
-                            topics[customer][topic_name] = memb
+                            topics[topic_name] = memb
                         except NotImplementedError:
                             continue
 
@@ -196,7 +191,7 @@ class TopicFactory:
                 match = score
         return topic_name
 
-    def create_topic(self, customer: str, intent_labels: str=List[str],
+    def create_topic(self, intent_labels: str=List[str],
                      id: str=None) -> List[Topic]:
         """Create specific sub-Topic instances according to topic names.
 
@@ -210,4 +205,4 @@ class TopicFactory:
             if name in self._topics:
                 topics.append(self._topics[name](id))
         return topics if topics else \
-            [self._topics[customer][self.default_topic_name](id)]
+            [self._topics[self.default_topic_name](id)]
