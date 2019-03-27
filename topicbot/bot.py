@@ -27,7 +27,7 @@ class Bot:
     _max_clients_num = None
     _responses = dict()
 
-    def __init__(self, configs_path: str, ner, intent_classifier):
+    def __init__(self, configs_path: str, ner, intent_classifiers: dict):
         """
 
         Parameters
@@ -36,7 +36,7 @@ class Bot:
         """
         self._lock = RLock()
         self._ner = ner
-        self._intent_classifier = intent_classifier
+        self._intent_classifiers = intent_classifiers
 
     def __new__(cls, *args, **kwargs):
         if not configs.has_loaded:
@@ -80,7 +80,9 @@ class Bot:
             if not str(msg.get(field, "")).strip():
                 raise MsgError
 
-        client = Client(msg, self._ner, self._intent_classifier)
+        customer = msg.get("customer", "common")
+
+        client = Client(msg, self._ner, self._intent_classifiers[customer])
         with self._lock:
             for response in client.respond():
                 timestamp = int(time.time()) + response.delay
