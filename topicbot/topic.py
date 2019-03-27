@@ -6,6 +6,7 @@ import uuid
 import inspect
 import importlib.util
 
+from abc import abstractclassmethod, abstractmethod
 from inspect import isclass
 from typing import Dict, Type, List, Tuple, Union
 
@@ -28,36 +29,25 @@ class Topic:
     def dialog(self) -> Dialog:
         return self._dialog
 
-    @classmethod
-    def domain(cls) -> str:
-        raise NotImplementedError
-
-    @classmethod
-    def intent(cls) -> str:
-        raise NotImplementedError
-
-    def case(self, dialog_cases: List[str]) -> str:
-        """Calculate topic case with dialog cases."""
-        raise NotImplementedError
-
     def get(self, key: str):
         """Get the most possible value from self._dialog.
         If no data found, None will be returned."""
         return self._dialog[key]
 
-    def case_maps(self) -> Dict[str, dict]:
+    @abstractmethod
+    def intent_maps(self) -> Dict[str, dict]:
         """Maps from case to intent method.
 
         According to the case from self.case(), the correct method will
         be selected to generate response of this round of conversation.
 
         Notice:
-            The case in the case_maps, the key of this dict, should have to
+            The case in the intent_maps, the key of this dict, should have to
             match the results of self.case().
 
         Example:
         {
-            "case0": {
+            "intent_label0": {
                 "desc": "xxx",
                 "method": "_response_case0",
                 "params": [
@@ -68,11 +58,11 @@ class Topic:
             ...
         }
         """
-        raise NotImplementedError
+        ...
 
-    @classmethod
+    @abstractclassmethod
     def _name(cls) -> str:
-        return cls.domain() + "." + cls.intent() if cls.intent() else cls.domain()
+        ...
 
     @property
     def name(self) -> str:
@@ -90,16 +80,16 @@ class Topic:
         if res_param_missing:
             responses = res_param_missing
         else:
-            method_name = self.case_maps()[self.case(self.dialog.cases)]["method"]
-            responses = getattr(self, method_name)()
+            responses = []
+            for label in self.dialog.intent_labels:
+                method_name = self.intent_maps()[label]["method"]
+                responses += getattr(self, method_name)()
 
         return responses
 
     def status(self):
         # todo add other status
         return {
-            "domain": self.domain(),
-            "intent": self.intent(),
             "name": self.name,
         }
 
