@@ -189,14 +189,16 @@ class Client(Base):
         self._dialog = self._class_dialog(msg, self.context, self.grounding)
         self._dialog.parse(self._ner, self._intent_classifier)
 
+        customer = msg["customer"]
         if self._need_change_topic():
             self._grounding.update(self._context)
             self._context.update(self._dialog)
             self._topics = TopicFactory().create_topic(
-                self._dialog.intent_labels)
+                customer, self._dialog.intent_labels)
         else:
             self._context.update(self._dialog)
             last_topic = self._previous_topics.popitem()
             topic_id = last_topic[0]
             topic_name = last_topic[1][-1]
-            self._topics = TopicFactory().create_topic([topic_name], topic_id)
+            self._topics = TopicFactory().create_topic(
+                customer, [topic_name], topic_id)

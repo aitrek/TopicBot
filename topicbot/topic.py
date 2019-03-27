@@ -127,9 +127,27 @@ class TopicFactory:
                 all_paths += self._get_all_paths(sub_path)
         return all_paths
 
-    def _load_topics_by_top_folder(self, top_folder: str) -> dict:
+    def _load_topics_by_models_folder(self, models_folder: str) -> dict:
+        """
+
+        Parameters
+        ----------
+        models_folder: the folder contains topics of different customers.
+            The names of its sub-folder are customers' names.
+
+        Returns
+        -------
+
+        """
         topics = {}
-        for path in self._get_all_paths(top_folder):
+        for path in os.listdir(models_folder):
+            if os.path.isdir(os.path.join(models_folder, path)):
+                topics[path] = {}
+
+        for path in self._get_all_paths(models_folder):
+
+            customer = path.split("/")[0]
+
             for f in os.listdir(path):
 
                 if not f.endswith(".py"):
@@ -146,7 +164,7 @@ class TopicFactory:
                     if isclass(memb) and issubclass(memb, Topic):
                         try:
                             topic_name = memb._name()
-                            topics[topic_name] = memb
+                            topics[customer][topic_name] = memb
                         except NotImplementedError:
                             continue
 
@@ -156,7 +174,7 @@ class TopicFactory:
         """Load all topics from topic path written in Configs instance"""
         topics = {}
         try:
-            topics = self._load_topics_by_top_folder(
+            topics = self._load_topics_by_models_folder(
                 configs.get("Topics", "topic_path"))
         except FileNotFoundError:
             # todo logging
@@ -164,7 +182,7 @@ class TopicFactory:
 
         if not topics:
             try:
-                topics = self._load_topics_by_top_folder(
+                topics = self._load_topics_by_models_folder(
                     os.path.join(configs.get("Root", "root_path"),
                                  configs.get("Topics", "topic_path"))
                 )
@@ -188,7 +206,8 @@ class TopicFactory:
                 match = score
         return topic_name
 
-    def create_topic(self, intent_labels: str=List[str], id: str=None) -> List[Topic]:
+    def create_topic(self, customer: str, intent_labels: str=List[str],
+                     id: str=None) -> List[Topic]:
         """Create specific sub-Topic instances according to topic names.
 
         :return: If parameter id is None, a completely empty instance without
@@ -200,4 +219,5 @@ class TopicFactory:
         for name in [n for n in topic_names if n]:
             if name in self._topics:
                 topics.append(self._topics[name](id))
-        return topics if topics else [self._topics[self.default_topic_name](id)]
+        return topics if topics else \
+            [self._topics[customer][self.default_topic_name](id)]
