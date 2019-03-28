@@ -149,7 +149,8 @@ class TopicFactory:
                     if isclass(memb) and issubclass(memb, Topic):
                         try:
                             topic_name = memb._name()
-                            topics[topic_name] = memb
+                            if topic_name is not None:
+                                topics[topic_name] = memb
                         except NotImplementedError:
                             continue
 
