@@ -61,7 +61,7 @@ class Client(Base):
         self._previous_topics = None
         self._context = None
         self._grounding = None
-        super().__init__(msg["user_id"])
+        super().__init__(msg["user"])
         self._msg = msg
         self._ner = ner
         self._intent_classifier = intent_classifier
