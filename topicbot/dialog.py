@@ -20,12 +20,11 @@ class Dialog(Base):
         "response"         # instance, final response to user
     ]
 
-    def __init__(self, msg: dict, context, grounding, intent_classifier):
+    def __init__(self, msg: dict, context, grounding):
         super().__init__()
         self._msg = msg
         self._context = context
         self._grounding = grounding
-        self._intent_classifier = intent_classifier
         self._response = None
         self._parsed_data = {}
 
