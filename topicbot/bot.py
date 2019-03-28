@@ -40,7 +40,7 @@ class Bot:
 
     def __new__(cls, *args, **kwargs):
         if not configs.has_loaded():
-            configs.read(args[0])
+            configs.read(kwargs["configs_path"])
 
         if cls._silence_threhold is None:
             cls._silence_threhold = configs.get("Bot", "silence_threhold")
@@ -72,11 +72,11 @@ class Bot:
         """To create response based on user input.
 
         :param msg: dict, user input message which should contain:
-            1.user_id - user identifier;
+            1.user - user identifier;
             2.text - what user said;
             3.other information such as customer id, platform, app version, etc.
         """
-        for field in ["user_id"]:
+        for field in ["user"]:
             if not str(msg.get(field, "")).strip():
                 raise MsgError
 
@@ -121,27 +121,27 @@ class Bot:
     def _silence_checking(self) -> Dict[str, int]:
         """Check if users have been silent for a long time."""
         checks = {}
-        for user_id, ts in self._clients.items():
+        for user, ts in self._clients.items():
             if time.time() - ts > self._silence_threhold - int(
                     random.normalvariate(0, self._silence_threhold_variance)):
-                checks[user_id] = 0
+                checks[user] = 0
 
         with self._lock:
-            for user_id in checks:
-                del self._clients[user_id]
+            for user in checks:
+                del self._clients[user]
 
         return checks
 
-    def actively_respond(self, user_id: str, initiative_code: int):
+    def actively_respond(self, user: str, initiative_code: int):
         """
         Actively response to the silent user.
 
-        :param user_id:
+        :param user:
         :param initiative_code:
         0 - silence
         """
         # get the cached msg format
-        cache = Base.get_cache_by_id(user_id)
+        cache = Base.get_cache_by_id(user)
         if cache:
             msg = cache.get("msg", {})
             if msg:
