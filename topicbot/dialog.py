@@ -68,7 +68,7 @@ class Dialog(Base):
         self._parsed_data = parsed_data
 
     @property
-    def intent_labels(self) -> str:
+    def intent_labels(self) -> List[str]:
         return self._parsed_data.get("intent_labels", [])
 
     @property

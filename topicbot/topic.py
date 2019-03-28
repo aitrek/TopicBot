@@ -188,8 +188,7 @@ class TopicFactory:
                 match = score
         return topic_name
 
-    def create_topic(self, intent_labels: str=List[str],
-                     id: str=None) -> List[Topic]:
+    def create_topic(self, intent_labels: List[str], id: str=None) -> List[Topic]:
         """Create specific sub-Topic instances according to topic names.
 
         :return: If parameter id is None, a completely empty instance without
