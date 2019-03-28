@@ -87,7 +87,7 @@ class Dialog(Base):
     def _merged_context(self) -> dict:
         """Merge context and grounding"""
         merged_context = copy.deepcopy(self._context.values)
-        for k, v in self._grounding.value.items():
+        for k, v in self._grounding.values.items():
             if k not in merged_context:
                 merged_context[k] = v
         return merged_context
@@ -98,7 +98,7 @@ class Dialog(Base):
         data, such as msg, context and grounding, etc.
         """
         text = self._msg.get("text", "")
-        entities = sorted(ner(text), key=lambda x: x["start"])
+        entities = sorted(ner.ner(text), key=lambda x: x["start"])
         template = create_template(text, entities)
         intent_labels = intent_classifier.predict(text, self._merged_context())
 
