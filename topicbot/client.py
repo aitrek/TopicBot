@@ -16,11 +16,6 @@ from .grounding import Grounding
 from .context import Context
 
 
-def _custom_class_dialog() -> Type[Dialog]:
-    return import_module(module_path=configs.get("Client", "class_dialog"),
-                         root_path=configs.get("Root", "root_path"))
-
-
 def _custom_class_context() -> Type[Context]:
     return import_module(module_path=configs.get("Client", "class_context"),
                          root_path=configs.get("Root", "root_path"))
@@ -40,7 +35,6 @@ class Client(Base):
         "context",             # Context of the conversation
         "grounding"            # The conversation grounding
     ]
-    _class_dialog = None
     _class_context = None
     _class_grounding = None
 
@@ -76,8 +70,6 @@ class Client(Base):
         self._update(msg)
 
     def __new__(cls, *args, **kwargs):
-        if cls._class_dialog is None:
-            cls._class_dialog = _custom_class_dialog()
         if cls._class_context is None:
             cls._class_context = _custom_class_context()
         if cls._class_grounding is None:
@@ -186,7 +178,7 @@ class Client(Base):
         if self._grounding is None:
             self._grounding = self._class_grounding()
 
-        self._dialog = self._class_dialog(msg, self.context, self.grounding)
+        self._dialog = Dialog(msg, self.context, self.grounding)
         self._dialog.parse(self._ner, self._intent_classifier)
 
         customer = msg["customer"]

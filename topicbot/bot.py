@@ -39,7 +39,7 @@ class Bot:
         self._intent_classifiers = intent_classifiers
 
     def __new__(cls, *args, **kwargs):
-        if not configs.has_loaded:
+        if not configs.has_loaded():
             configs.read(args[0])
 
         if cls._silence_threhold is None:
