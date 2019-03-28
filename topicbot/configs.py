@@ -21,7 +21,6 @@ class Configs:
             value = ""
         return value
 
-    @property
     def has_loaded(self) -> bool:
         return self._has_loaded
 
