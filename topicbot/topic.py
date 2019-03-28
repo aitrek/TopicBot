@@ -103,11 +103,7 @@ class TopicFactory:
 
     @property
     def default_topic_name(self):
-        return ".".join(self._default_topic.split(".")[:2])
-
-    @property
-    def default_topic_cases(self):
-        return [self._default_topic.split(".")[-1]]
+        return self._default_topic
 
     def _get_all_paths(self, path: str) -> List[str]:
         all_paths = [path]
