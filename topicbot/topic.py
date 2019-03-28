@@ -83,7 +83,7 @@ class Topic:
             responses = []
             for label in self.dialog.intent_labels:
                 method_name = self.intent_maps()[label]["method"]
-                responses += getattr(self, method_name)()
+                responses.append(getattr(self, method_name)())
 
         return responses
 
