@@ -57,7 +57,7 @@ class Response:
 class ResponseFactory:
 
     def __init__(self):
-        self._responses = self._load_responses()
+        self._responses = None
 
     def _load_responses(self):
         responses = {}
@@ -98,4 +98,9 @@ class ResponseFactory:
         :return: Response instance
         """
         protocol = response_data["protocol"]
+        if self._responses is None:
+            self._responses = self._load_responses()
         return self._responses[protocol](response_data, additional_msg)
+
+
+response_factory = ResponseFactory()
