@@ -51,7 +51,7 @@ def import_module(module_path: str, root_path: str=""):
     if "/" not in module_path and re.match("\.?(\w+\.)*\w+", module_path):
         try:
             return importlib.import_module(module_path)
-        except ModuleNotFoundError:
+        except Exception:
             name = module_path.split(".")[-1]
             module = module_path[:-len(name) - 1]
             return getattr(importlib.import_module(module), name)
@@ -61,12 +61,12 @@ def import_module(module_path: str, root_path: str=""):
         for ab_path in absolute_paths(module_path, root_path):
             # module_path without module name
             if os.path.isfile(ab_path) or os.path.isdir(ab_path):
-                raise ModuleNotFoundError
+                raise ImportError
 
             paths = ab_path.split(".")
             location = paths[0] + ".py"
             if not os.path.isfile(location):
-                raise ModuleNotFoundError
+                raise ImportError
 
             name = ".".join(paths[1:])
             spec = importlib.util.spec_from_file_location(name, location)
@@ -76,7 +76,7 @@ def import_module(module_path: str, root_path: str=""):
 
     # error
     else:
-        raise ModuleNotFoundError
+        raise ImportError
 
 
 class CustomJSONEncoder(json.JSONEncoder):
