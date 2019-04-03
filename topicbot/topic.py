@@ -9,6 +9,7 @@ import importlib.util
 from abc import abstractclassmethod, abstractmethod
 from inspect import isclass
 from typing import Dict, Type, List, Tuple, Union
+from collections import OrderedDict
 
 from topicbot.utils import singleton
 from .configs import configs
@@ -20,6 +21,9 @@ class Topic:
     def __init__(self, id: str=None):
         self._id = id if id else str(uuid.uuid1())
         self._dialog = None
+
+    def __repr__(self):
+        return self._name()
 
     @property
     def id(self):
@@ -72,7 +76,8 @@ class Topic:
         """Return Response instance if some param miss, or None if no param missing."""
         raise NotImplementedError
 
-    def respond(self, dialog: Dialog, **kwargs) -> Union[dict, List[dict], Tuple[dict]]:
+    def respond(self, dialog: Dialog, label: str, **kwargs) -> \
+            Union[dict, List[dict], Tuple[dict]]:
         """Respond to user input"""
         self._dialog = dialog
         # check params
@@ -81,9 +86,8 @@ class Topic:
             responses = res_param_missing
         else:
             responses = []
-            for label in self.dialog.intent_labels:
-                method_name = self.intent_maps()[label]["method"]
-                responses.append(getattr(self, method_name)())
+            method_name = self.intent_maps()[label]["method"]
+            responses.append(getattr(self, method_name)())
 
         return responses
 
@@ -177,7 +181,7 @@ class TopicFactory:
     def has_topic(self, topic_name: str=""):
         return topic_name in self._topics
 
-    def _get_topic_name(self, intent_label: str) -> str:
+    def get_topic_name(self, intent_label: str) -> str:
         """Get topic name through comparing intent_label and topic names."""
         match = 0
         topic_name = ""
@@ -188,17 +192,14 @@ class TopicFactory:
                 match = score
         return topic_name
 
-    def create_topic(self, intent_labels: List[str], id: str=None) -> List[Topic]:
+    def create_topic(self, topic_name: str, id: str=None) -> Topic:
         """Create specific sub-Topic instances according to topic names.
 
         :return: If parameter id is None, a completely empty instance without
             any conversation data will be returned. Otherwise, the returned
             instance will have previous conversation data restored from cache.
         """
-        topics = []
-        topic_names = [self._get_topic_name(label) for label in intent_labels]
-        for name in [n for n in topic_names if n]:
-            if name in self._topics:
-                topics.append(self._topics[name](id))
-        return topics if topics else \
-            [self._topics[self.default_topic_name](id)]
+        if id:
+            return self._topics[topic_name](id)
+        else:
+            return self._topics[topic_name](None)

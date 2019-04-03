@@ -61,12 +61,12 @@ class Client(Base):
         self._previous_topics = None
         self._context = None
         self._grounding = None
+        self._topics = OrderedDict()
         super().__init__(msg["user"])
         self._msg = msg
         self._ner = ner
         self._intent_classifier = intent_classifier
         self._dialog = None
-        self._topics = []
         self._update(msg)
 
     def __new__(cls, *args, **kwargs):
@@ -87,14 +87,14 @@ class Client(Base):
     @property
     def previous_topics(self) -> list:
         """Return listified OrderdDict items"""
-        return list(self._previous_topics.items())
+        return self._previous_topics
 
     @previous_topics.setter
     def previous_topics(self, items: list):
         """
         :param items: listified OrderdDict items
         """
-        self._previous_topics = OrderedDict(items)
+        self._previous_topics = items
 
     @property
     def context(self):
@@ -126,7 +126,7 @@ class Client(Base):
 
         if not self.previous_topics:
             return True
-        elif self.previous_topics[-1] not in self._dialog.intent_labels:
+        elif not set(self.previous_topics[-1].keys()) & set(self._dialog.intent_labels):
             return True
         else:
             return False
@@ -134,8 +134,8 @@ class Client(Base):
     def respond(self) -> List[Response]:
         """Respond to user according to msg, context and grounding."""
         results = []
-        for topic in self._topics:
-            responses = topic.respond(self._dialog)
+        for label, topic in self._topics.items():
+            responses = topic.respond(self._dialog, label)
             if isinstance(responses, dict):
                 results.append(
                     ResponseFactory().create_response(
@@ -158,9 +158,9 @@ class Client(Base):
             "timestamp": int(time.time())
         }
 
-    def _update_previous_topics(self, topic: Topic):
-        if topic is not None:
-            self._previous_topics[topic.id] = topic.status()
+    def _update_previous_topics(self, topics: OrderedDict):
+        if topics:
+            self._previous_topics.append(topics)
 
     def _update(self, msg: dict):
         """
@@ -168,7 +168,7 @@ class Client(Base):
         with input message from user.
         """
         if self._previous_topics is None:
-            self._previous_topics = OrderedDict()
+            self._previous_topics = []
 
         if self._context is None:
             self._context = self._class_context.create_instance_from_msg(msg)
@@ -192,3 +192,6 @@ class Client(Base):
             topic_id = last_topic[0]
             topic_name = last_topic[1][-1]
             self._topics = TopicFactory().create_topic([topic_name], topic_id)
+
+        # todo update_previous_topics
+        self._update_previous_topics(self._topics)
