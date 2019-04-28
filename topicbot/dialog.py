@@ -99,8 +99,9 @@ class Dialog(Base):
         """
         text = self._msg.get("text", "")
         entities = sorted(ner.ner(text), key=lambda x: x["start"])
-        template = create_template(text, entities)
-        intent_labels = intent_classifier.predict(text, self._merged_context())
+        template = create_template(entities)
+        intent_labels = intent_classifier.predict(template,
+                                                  self._merged_context())
 
         self._parsed_data = {"text": text,
                              "template": template,

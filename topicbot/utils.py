@@ -100,23 +100,21 @@ def singleton(cls, *args, **kwargs):
     return wrapper
 
 
-def create_template(text: str, entities: List[dict]) -> str:
+def create_template(entities: List[dict]) -> str:
     """
     Create template with result from the ner method, replace entities
     with their types.
 
     Parameters
     ----------
-    text: standardized text divided with only one space.
-        If the language is non-space like Chinese, Japanese,
-        it should be divided first.
     entities: sorted ner result:
         [
             {
                 "start": xxx,       # int, start position of a entity
                 "end": xxx,         # int, end position of a entity
                 "value": xxx,       # str, value of a entity
-                "type": xxx         # str, type of a entity
+                "type": xxx         # str, type of a entity,
+                                    # or None if it is not a entity
             },
             ...
         ]
@@ -125,20 +123,5 @@ def create_template(text: str, entities: List[dict]) -> str:
     -------
 
     """
-    tpl = ""
-    idx = 0
-    start = 0
-    for word in text.split(" "):
-        end = start + len(word)
-        if idx <= len(entities) - 1:
-            if start == entities[idx]["start"] and end == entities[idx]["end"]:
-                tpl += " " + "{" + entities[idx]["type"] + "}" \
-                    if tpl else "{" + entities[idx]["type"] + "}"
-                idx += 1
-            else:
-                tpl += " " + word if tpl else word
-        else:
-            tpl += " " + word if tpl else word
-        start = end
-
-    return tpl
+    return " ".join([ent["value"] if not ent["type"]
+                     else "{" + ent["type"] + "}" for ent in entities])
