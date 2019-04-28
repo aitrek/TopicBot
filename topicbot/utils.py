@@ -123,5 +123,11 @@ def create_template(entities: List[dict]) -> str:
     -------
 
     """
-    return " ".join([ent["value"] if not ent["type"]
-                     else "{" + ent["type"] + "}" for ent in entities])
+    segs = []
+    for ent in entities:
+        if ent["type"] is None:
+            segs.append(ent["value"])
+        else:
+            segs.append("{" + ent["type"] + "}")
+    return " ".join(segs)
+
