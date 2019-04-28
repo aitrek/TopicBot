@@ -88,11 +88,12 @@ class Topic:
             responses = []
             method_name = self.intent_maps()[label]["method"]
             res = getattr(self, method_name)()
-            if isinstance(res, dict):
-                responses.append(res)
-            elif isinstance(res, (list, tuple)):
-                for r in res:
-                    responses.append(r)
+            if res:
+                if isinstance(res, dict):
+                    responses.append(res)
+                elif isinstance(res, (list, tuple)):
+                    for r in res:
+                        responses.append(r)
 
         return responses
 
