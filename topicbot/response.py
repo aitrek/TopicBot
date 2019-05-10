@@ -2,6 +2,7 @@
 
 import os
 import json
+import random
 import inspect
 import importlib.util
 
@@ -24,7 +25,20 @@ class Response:
         """
         self._output = response_data.get("output", {})
         self._raw_data = response_data.get("raw_data", {})
-        self._delay = response_data.get("delay", 0)
+        if response_data.get("no_delay", False):
+            self._delay = 0
+        else:
+            delay = response_data.get("delay")
+            if not delay:
+                msg = response_data.get("output", {}).get("msg", "")
+                if not msg:
+                    delay = 0
+                else:
+                    delay_per_word = configs.get("Responses", "delay_per_word")
+                    delay_ratio = configs.get("Responses", "dealy_ration")
+                    delay = random.normalvariate(len(msg) * delay_per_word,
+                                                 delay_ratio)
+            self._delay = delay
         self._msg_data = msg_data
 
     def __repr__(self):
