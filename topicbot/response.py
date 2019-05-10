@@ -37,13 +37,16 @@ class Response:
                     delay_per_word = configs.get("Responses", "delay_per_word")
                     delay_ratio = configs.get("Responses", "delay_ratio")
                     delay_max = configs.get("Responses", "delay_max")
+
                     delay_per_word = float(delay_per_word)
                     delay_ratio = float(delay_ratio)
                     delay_max = float(delay_max)
-                    delay = random.normalvariate(len(msg) * delay_per_word,
-                                                 delay_ratio)
-                    delay = max(delay, delay_max)
+
+                    delay_mu = max(len(msg) * delay_per_word, delay_max)
+                    delay = random.normalvariate(delay_mu, delay_mu * delay_ratio)
+
             self._delay = delay
+
         self._msg_data = msg_data
 
     def __repr__(self):
