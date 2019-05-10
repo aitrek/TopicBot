@@ -42,7 +42,7 @@ class Response:
                     delay_ratio = float(delay_ratio)
                     delay_max = float(delay_max)
 
-                    delay_mu = max(len(msg) * delay_per_word, delay_max)
+                    delay_mu = min(len(msg) * delay_per_word, delay_max)
                     delay = random.normalvariate(delay_mu, delay_mu * delay_ratio)
 
             self._delay = delay
