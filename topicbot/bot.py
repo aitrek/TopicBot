@@ -116,7 +116,7 @@ class Bot:
         for user, data in self._clients.items():
             initiative = data.get("initiative", True)
             if initiative:
-                ts = data.get("timestamp", 0)
+                ts = data.get("ts", 0)
                 if time.time() - ts > self._silence_threhold - int(
                         random.normalvariate(
                             0, self._silence_threhold_variance)):
