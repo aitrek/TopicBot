@@ -9,6 +9,7 @@ from typing import List, Tuple, Union
 from .base import Base
 from .response import ResponseFactory
 from .utils import create_template
+from .configs import configs
 
 
 class Dialog(Base):
@@ -97,11 +98,18 @@ class Dialog(Base):
         Parse user input including ner, intent recognition from any available
         data, such as msg, context and grounding, etc.
         """
-        text = self._msg.get("text", "")
-        entities = sorted(ner.ner(text), key=lambda x: x["start"])
-        template = create_template(entities)
-        intent_labels = intent_classifier.predict(template,
-                                                  self._merged_context())
+        if self._msg.get("initiative", False):
+            text = ""
+            entities = {}
+            template = ""
+            intent_labels = [configs.get("InitiativeResponse",
+                                         "initiative_intent_label")]
+        else:
+            text = self._msg.get("text", "")
+            entities = sorted(ner.ner(text), key=lambda x: x["start"])
+            template = create_template(entities)
+            intent_labels = intent_classifier.predict(template,
+                                                      self._merged_context())
 
         self._parsed_data = {"text": text,
                              "template": template,

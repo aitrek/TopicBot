@@ -6,7 +6,7 @@ import random
 
 from threading import RLock
 from collections import OrderedDict
-from typing import Dict
+from typing import Dict, List
 
 from .configs import configs
 from .base import Base
@@ -14,14 +14,14 @@ from .client import Client
 from .exceptions import MsgError
 
 
-_default_silence_threhold = 600
-_default_silence_threhold_variance = 30
+_default_silence_threhold = 180
+_default_silence_threhold_variance = 5
 _default_max_clients_num = 1024     # maximum clients to track
 
 
 class Bot:
 
-    _clients = OrderedDict()
+    _clients = {}
     _silence_threhold = None
     _silence_threhold_variance = None
     _max_clients_num = None
@@ -94,45 +94,42 @@ class Bot:
         self._update(client)
         client.save()
 
-    def initiative_response_checking(self) -> Dict[str, int]:
-        """Check if users need to be responded to initiatively.
-
-        The results is a list of dict with user_id as key and corresponding
-        initiative response code as value, like:
-        {
-            "user_id0": code0,
-            ...
-        }
-
-        Response code:
-        0 - silence
+    def initiative_response_checking(self) -> List[str]:
         """
-        checks = {}
+        Check if users need to be responded to initiatively and return
+        these users.
+        """
+        checks = []
         for method in self._initiative_response_checking_methods():
-            checks.update(method())
+            checks += method()
         return checks
 
     def _initiative_response_checking_methods(self):
-        """Return intiative response checking methods."""
+        """Return initiative response checking methods."""
         # other initiative response checking methods
         # could be added in the returned list.
-        return [self._silence_checking]
+        return [self._silence_users]
 
-    def _silence_checking(self) -> Dict[str, int]:
-        """Check if users have been silent for a long time."""
-        checks = {}
-        for user, ts in self._clients.items():
-            if time.time() - ts > self._silence_threhold - int(
-                    random.normalvariate(0, self._silence_threhold_variance)):
-                checks[user] = 0
+    def _silence_users(self) -> List[str]:
+        """Find users have been silent for a long time."""
+        users = []
+        for user, data in self._clients.items():
+            initiative = data.get("initiative", True)
+            if initiative:
+                ts = data.get("timestamp", 0)
+                if time.time() - ts > self._silence_threhold - int(
+                        random.normalvariate(
+                            0, self._silence_threhold_variance)):
+                    users.append(user)
 
         with self._lock:
-            for user in checks:
-                del self._clients[user]
+            for user in users:
+                self._clients[user]["ts"] = int(time.time())
+                self._clients[user]["initiative"] = False
 
-        return checks
+        return users
 
-    def actively_respond(self, user: str, initiative_code: int):
+    def actively_respond(self, user: str):
         """
         Actively response to the silent user.
 
@@ -146,7 +143,7 @@ class Bot:
             msg = cache.get("msg", {})
             if msg:
                 msg["text"] = ""
-                msg["initiative_code"] = initiative_code
+                msg["initiative"] = True
                 self.respond(msg)
 
     def get_responses(self):
@@ -160,6 +157,18 @@ class Bot:
     def _update(self, client: Client):
         with self._lock:
             while len(self._clients) > self._max_clients_num:
-                self._clients.popitem(last=True)
-            self._clients[client.id] = client.state().get(
-                "timestamp", int(time.time()))
+                users = [(user, self._clients[user].get("ts", 0))
+                         for user in self._clients]
+                users = sorted(users, key=lambda x: x[1], reverse=True)
+                del_users = [data[0] for data in users][self._max_clients_num:]
+                with self._lock:
+                    for user in del_users:
+                        del self._clients[user]
+
+            user = client.id
+            if user not in self._clients:
+                self._clients[user] = {"ts": int(time.time()),
+                                       "initiative": True}
+            else:
+                self._clients[client.id]["ts"] = client.state().get(
+                    "timestamp", int(time.time()))
