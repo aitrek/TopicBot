@@ -85,6 +85,10 @@ class Dialog(Base):
         self._response = ResponseFactory().create_response(response_data,
                                                            additional_msg)
 
+    @property
+    def context(self):
+        return self._context
+
     def _merged_context(self) -> dict:
         """Merge context and grounding"""
         merged_context = copy.deepcopy(self._context.values)
