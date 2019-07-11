@@ -18,9 +18,9 @@ class Context:
     def __init__(self, data: dict=None):
         self._data = data if data else {}
 
-    def get(self, key: str):
+    def get(self, key: str, default):
         """Get context data from self._data"""
-        return self._data.get(key)
+        return self._data.get(key, default)
 
     @property
     def values(self) -> dict:
