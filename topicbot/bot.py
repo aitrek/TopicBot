@@ -25,7 +25,7 @@ class Bot:
     _silence_threhold = None
     _silence_threhold_variance = None
     _max_clients_num = None
-    _responses = dict()
+    _responses = OrderedDict()
 
     def __init__(self, configs_path: str, ner, intent_classifiers: dict):
         """
