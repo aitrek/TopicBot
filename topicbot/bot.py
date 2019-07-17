@@ -148,7 +148,7 @@ class Bot:
 
     def get_responses(self):
         responses = []
-        if responses:
+        if self._responses:
             with self._lock:
                 for key in [k for k in self._responses if k < int(time.time())]:
                     responses += self._responses.pop(key)
