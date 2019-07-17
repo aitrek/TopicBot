@@ -25,7 +25,7 @@ class Bot:
     _silence_threhold = None
     _silence_threhold_variance = None
     _max_clients_num = None
-    _responses = OrderedDict()
+    _responses = dict()
 
     def __init__(self, configs_path: str, ner, intent_classifiers: dict):
         """
@@ -148,9 +148,10 @@ class Bot:
 
     def get_responses(self):
         responses = []
-        with self._lock:
-            for key in [k for k in self._responses if k < int(time.time())]:
-                responses += self._responses.pop(key)
+        if responses:
+            with self._lock:
+                for key in [k for k in self._responses if k < int(time.time())]:
+                    responses += self._responses.pop(key)
 
         return responses
 
