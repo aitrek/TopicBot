@@ -122,10 +122,11 @@ class Bot:
                             0, self._silence_threhold_variance)):
                     users.append(user)
 
-        with self._lock:
-            for user in users:
-                self._clients[user]["ts"] = int(time.time())
-                self._clients[user]["initiative"] = False
+        if users:
+            with self._lock:
+                for user in users:
+                    self._clients[user]["ts"] = int(time.time())
+                    self._clients[user]["initiative"] = False
 
         return users
 
