@@ -22,6 +22,11 @@ class Context:
         """Get context data from self._data"""
         return self._data.get(key, default)
 
+    def delelte(self, key: str):
+        """Delete key-value from self._data"""
+        if key in self._data:
+            del self._data[key]
+
     @property
     def values(self) -> dict:
         return self._data
