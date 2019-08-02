@@ -2,6 +2,7 @@
 
 import os
 import json
+import random
 import inspect
 import importlib.util
 
@@ -34,12 +35,15 @@ class Response:
                     delay = 0
                 else:
                     delay_per_word = configs.get("Responses", "delay_per_word")
+                    delay_ratio = configs.get("Responses", "delay_ratio")
                     delay_max = configs.get("Responses", "delay_max")
 
                     delay_per_word = float(delay_per_word)
+                    delay_ratio = float(delay_ratio)
                     delay_max = float(delay_max)
 
-                    delay = min(len(msg) * delay_per_word, delay_max)
+                    delay_mu = min(len(msg) * delay_per_word, delay_max)
+                    delay = random.normalvariate(delay_mu, delay_mu * delay_ratio)
 
             self._delay = delay
 
@@ -62,6 +66,10 @@ class Response:
         """Make it possible for Bot instance to control the time
         to send out the response"""
         return self._delay
+
+    @property
+    def user(self):
+        return self._msg_data["user"]
 
     def template(self) -> dict:
         """A empty response values to be filled with real data
